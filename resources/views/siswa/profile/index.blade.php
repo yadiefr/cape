@@ -6,15 +6,6 @@
 <div class="w-full px-6 py-6">
     <div class="flex flex-col space-y-6">
         <h1 class="text-2xl font-bold text-gray-800 mb-3">Profil Saya</h1>
-        <div class="text-sm breadcrumbs">
-            <ul class="flex items-center space-x-2 text-gray-500">
-                <li><a href="{{ route('siswa.dashboard') }}" class="hover:text-blue-600">Dashboard</a></li>
-                <li class="flex items-center space-x-2">
-                    <span class="text-gray-400">/</span>
-                    <span>Profil</span>
-                </li>
-            </ul>
-        </div>
     </div>
 
     <!-- Success/Error Messages -->

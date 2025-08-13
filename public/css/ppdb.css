@@ -1,0 +1,422 @@
+/* PPDB Registration Form Styles */
+
+/* Main styles */
+.ppdb-container {
+  max-width: 1140px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.ppdb-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.ppdb-header h1 {
+  color: #1d4ed8;
+  font-weight: 700;
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Steps Indicator */
+.ppdb-steps {
+  padding: 20px 0;
+}
+
+.ppdb-step-item {
+  position: relative;
+  z-index: 1;
+  width: 50px;
+  flex-shrink: 0;
+}
+
+.step-circle {
+  width: 40px;
+  height: 40px;
+  background: #e0e7ff;
+  color: #4f46e5;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  margin: 0 auto;
+  border: 2px solid #4f46e5;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.ppdb-step-item.active .step-circle {
+  background: #4f46e5;
+  color: white;
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.2);
+}
+
+.ppdb-step-line {
+  height: 3px;
+  background: #e0e7ff;
+  flex-grow: 1;
+  margin-top: 20px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.ppdb-step-line.active {
+  background: #4f46e5;
+}
+
+.step-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #4b5563;
+  margin-top: 0.5rem;
+  white-space: nowrap;
+}
+
+.ppdb-step-item.active .step-label {
+  color: #4f46e5;
+}
+
+/* Card and Form Elements */
+.ppdb-card {
+  background: white;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+  border-radius: 16px;
+  margin-bottom: 2rem;
+}
+
+.ppdb-form-section {
+  padding: 1rem 0.5rem;
+}
+
+.ppdb-form-section h3 {
+  color: #1d4ed8;
+  font-weight: 700;
+  font-size: 1.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 0.25rem rgba(79, 70, 229, 0.25);
+}
+
+.input-group-text {
+  background-color: #f3f4f6;
+  color: #4f46e5;
+  border-color: #d1d5db;
+}
+
+.btn-primary {
+  background-color: #4f46e5;
+  border-color: #4338ca;
+}
+
+.btn-primary:hover, .btn-primary:focus {
+  background-color: #4338ca;
+  border-color: #3730a3;
+}
+
+.btn-outline-secondary {
+  color: #4b5563;
+  border-color: #d1d5db;
+}
+
+.btn-outline-secondary:hover {
+  background-color: #f3f4f6;
+  color: #1f2937;
+  border-color: #9ca3af;
+}
+
+.btn-success {
+  background-color: #10b981;
+  border-color: #059669;
+}
+
+.btn-success:hover {
+  background-color: #059669;
+  border-color: #047857;
+}
+
+/* Animation */
+.ppdb-form-section {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 767.98px) {
+  .ppdb-step-item {
+    width: 30px;
+  }
+  
+  .step-circle {
+    width: 30px;
+    height: 30px;
+    font-size: 0.9rem;
+  }
+  
+  .step-label {
+    font-size: 0.7rem;
+  }
+  
+  .ppdb-form-section h3 {
+    font-size: 1.5rem;
+  }
+}
+
+.ppdb-step-item.active .step-circle {
+  background: #4f46e5;
+  color: white;
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.2);
+}
+
+.ppdb-step-line {
+  flex: 1;
+  height: 3px;
+  background: #e0e7ff;
+  margin-top: 20px;
+  position: relative;
+}
+
+.ppdb-step-line.active {
+  background: #4f46e5;
+}
+
+.step-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+.ppdb-step-item.active .step-label {
+  color: #4f46e5;
+  font-weight: 600;
+}
+
+/* Card & Form Elements */
+.ppdb-card {
+  background-color: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+}
+
+.ppdb-form-section {
+  padding: 30px;
+  border-bottom: 1px solid #f3f4f6;
+}
+
+.ppdb-form-section h2 {
+  color: #1e40af;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.form-label {
+  font-weight: 500;
+  color: #4b5563;
+}
+
+.form-control:focus, 
+.form-select:focus {
+  border-color: #4f46e5;
+  box-shadow: 0 0 0 0.25rem rgba(79, 70, 229, 0.25);
+}
+
+.btn-primary {
+  background-color: #4f46e5;
+  border-color: #4338ca;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: #4338ca;
+  border-color: #3730a3;
+}
+
+.ppdb-header p {
+  color: var(--medium);
+  font-size: 1.1rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Form Steps */
+.ppdb-step {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 2rem;
+  gap: 1.5rem;
+}
+
+.ppdb-step .circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3b82f6 60%, #6366f1 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  position: relative;
+  z-index: 2;
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
+}
+
+.ppdb-step .line {
+  height: 3px;
+  flex: 1;
+  background: #e0e7ff;
+  position: relative;
+}
+
+.ppdb-step .line.active {
+  background: linear-gradient(to right, #3b82f6, #6366f1);
+}
+
+.ppdb-step .label {
+  font-weight: 600;
+  color: var(--medium);
+}
+
+.ppdb-step .label.active {
+  color: var(--primary);
+}
+
+/* Form Styling */
+.ppdb-glass {
+  background: rgba(255,255,255,0.85);
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.18);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 1.5rem;
+  border: 1.5px solid #e0e7ef;
+  overflow: hidden;
+}
+
+.ppdb-form-section {
+  padding: 2rem;
+}
+
+.ppdb-form-section h3 {
+  color: var(--primary-dark);
+  font-weight: 600;
+  border-bottom: 2px solid #eef2ff;
+  padding-bottom: 0.75rem;
+  margin-bottom: 1.5rem;
+}
+
+.ppdb-navigation {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eef2ff;
+}
+
+.ppdb-btn {
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.ppdb-btn-primary {
+  background: linear-gradient(135deg, #3b82f6 60%, #6366f1 100%);
+  color: white;
+  box-shadow: 0 4px 10px rgba(59, 130, 246, 0.2);
+}
+
+.ppdb-btn-primary:hover {
+  background: linear-gradient(135deg, #2563eb 60%, #4f46e5 100%);
+  box-shadow: 0 6px 15px rgba(59, 130, 246, 0.3);
+  transform: translateY(-2px);
+}
+
+.ppdb-btn-secondary {
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+.ppdb-btn-secondary:hover {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+/* Custom Form Controls */
+.form-control:focus {
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
+}
+
+.form-select:focus {
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 0.25rem rgba(59, 130, 246, 0.25);
+}
+
+.form-label {
+  font-weight: 500;
+  color: #334155;
+  margin-bottom: 0.4rem;
+}
+
+.form-text {
+  color: #64748b;
+}
+
+/* Custom Photo Upload */
+.photo-upload-container {
+  border: 2px dashed #cbd5e1;
+  border-radius: 0.75rem;
+  padding: 1.5rem;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.photo-upload-container:hover {
+  border-color: #93c5fd;
+  background-color: #f8fafc;
+}
+
+.photo-preview {
+  width: 150px;
+  height: 200px;
+  background: #f1f5f9;
+  border-radius: 0.5rem;
+  margin: 0 auto 1rem;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #e2e8f0;
+}
+
+.photo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .ppdb-step {
+    flex-wrap: wrap;
+  }
+  
+  .ppdb-step .line {
+    width: 100%;
+    height: 2px;
+    margin: 0.5rem 0;
+  }
+  
+  .ppdb-form-section {
+    padding: 1.5rem;
+  }
+}

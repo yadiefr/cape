@@ -1,0 +1,8 @@
+# Browsers that we support
+
+> 1%
+last 2 versions
+not ie <= 11
+Firefox ESR
+Safari >= 10
+Chrome >= 60

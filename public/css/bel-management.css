@@ -1,0 +1,113 @@
+/* CSS untuk smooth animations pada halaman admin bel */
+
+/* Animasi untuk tombol hover */
+.transition-colors {
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Animasi untuk row deletion */
+.row-fade-out {
+    opacity: 0.5;
+    transform: translateX(-20px);
+    transition: all 0.3s ease-in-out;
+}
+
+/* Animasi untuk notification */
+#dynamic-notification {
+    animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Spinner animation */
+.fa-spin {
+    animation: fa-spin 1s infinite linear;
+}
+
+@keyframes fa-spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(359deg);
+    }
+}
+
+/* Button loading state */
+.button-loading {
+    position: relative;
+    pointer-events: none;
+}
+
+.button-loading::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    margin: auto;
+    border: 2px solid transparent;
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Hover effects for action buttons */
+.action-button {
+    transition: all 0.2s ease;
+}
+
+.action-button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Table row hover effect */
+.table-row-hover {
+    transition: background-color 0.2s ease;
+}
+
+.table-row-hover:hover {
+    background-color: rgba(249, 250, 251, 0.8);
+}
+
+/* Notification styles with better contrast */
+.notification {
+    backdrop-filter: blur(4px);
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Success notification */
+.notification-success {
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(5, 150, 105, 0.1) 100%);
+    border-left: 4px solid #10b981;
+    color: #047857;
+}
+
+/* Error notification */
+.notification-error {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(220, 38, 38, 0.1) 100%);
+    border-left: 4px solid #ef4444;
+    color: #b91c1c;
+}
+
+/* Info notification */
+.notification-info {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(37, 99, 235, 0.1) 100%);
+    border-left: 4px solid #3b82f6;
+    color: #1d4ed8;
+}

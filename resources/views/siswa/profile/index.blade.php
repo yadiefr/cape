@@ -1,6 +1,6 @@
 @extends('layouts.siswa')
 
-@section('title', 'Profil Saya - SMK PGRI CIKAMPEK')
+@section('title', 'Profil Saya)
 
 @section('content')
 <div class="w-full px-6 py-6">

@@ -103,6 +103,15 @@ Route::get('/galeri/{id}/photos', function($id) {
         ->orderBy('id', 'asc')
         ->get(['foto', 'is_thumbnail']);
     
+    // Tambahkan URL foto untuk setiap item
+    $photos = $photos->map(function($photo) {
+        return [
+            'foto' => $photo->foto,
+            'is_thumbnail' => $photo->is_thumbnail,
+            'foto_url' => $photo->foto_url
+        ];
+    });
+    
     return response()->json($photos);
 });
 

@@ -441,7 +441,22 @@
             <div class="gallery-grid" data-aos="fade-up">
                 @forelse($galeri->take(8) as $item)
                 <div class="gallery-item" data-category="{{ $item->kategori }}">
-                    <img src="{{ asset('uploads/galeri/' . $item->gambar) }}" alt="{{ $item->judul }}">
+                    @php
+                        $thumbnailSrc = '';
+                        if ($item->thumbnail && $item->thumbnail->foto) {
+                            $thumbnailSrc = $item->thumbnail->foto_url;
+                        } elseif ($item->gambar) {
+                            $thumbnailSrc = asset('uploads/galeri/' . $item->gambar);
+                        }
+                    @endphp
+                    @if($thumbnailSrc)
+                        <img src="{{ $thumbnailSrc }}" alt="{{ $item->judul }}">
+                    @else
+                        <div class="no-image-placeholder">
+                            <i class="fas fa-images"></i>
+                            <span>Tidak ada foto</span>
+                        </div>
+                    @endif
                     <div class="gallery-overlay">
                         <div class="gallery-info">
                             <h3>{{ $item->judul }}</h3>
@@ -756,7 +771,7 @@
                             var photo = data[i];
                             var photoDiv = document.createElement('div');
                             photoDiv.className = 'simple-photo-item';
-                            photoDiv.innerHTML = '<img src="/uploads/galeri/' + photo.foto + '" alt="Foto ' + (i + 1) + '">';
+                            photoDiv.innerHTML = '<img src="' + (photo.foto_url || '/uploads/galeri/' + photo.foto) + '" alt="Foto ' + (i + 1) + '">';
                             photosContainer.appendChild(photoDiv);
                         }
                     }
@@ -869,7 +884,7 @@
                                 const photoDiv = document.createElement('div');
                                 photoDiv.className = 'gallery-detail-photo';
                                 photoDiv.innerHTML = `
-                                    <img src="/uploads/galeri/${photo.foto}" alt="Foto ${index + 1}" loading="lazy">
+                                    <img src="${photo.foto_url || '/uploads/galeri/' + photo.foto}" alt="Foto ${index + 1}" loading="lazy">
                                     <div class="photo-overlay">
                                         <i class="fas fa-search-plus"></i>
                                     </div>
@@ -915,7 +930,7 @@
                 const imageZoomModal = document.getElementById('imageZoomModal');
                 
                 if (zoomedImage && imageCaption && imageZoomModal) {
-                    zoomedImage.src = `/uploads/galeri/${photo.foto}`;
+                    zoomedImage.src = photo.foto_url || `/uploads/galeri/${photo.foto}`;
                     imageCaption.textContent = `Foto ${photoIndex + 1} dari ${currentGalleryPhotos.length}`;
                     imageZoomModal.classList.add('show');
                 } else {

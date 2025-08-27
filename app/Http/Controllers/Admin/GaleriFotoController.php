@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Galeri;
 use App\Models\GaleriFoto;
 use Illuminate\Support\Facades\Storage;
+use App\Helpers\HostingStorageHelper;
 
 class GaleriFotoController extends Controller
 {
@@ -35,11 +36,15 @@ class GaleriFotoController extends Controller
         $foto_ids = [];
         if ($request->hasFile('foto')) {
             foreach ($request->file('foto') as $idx => $file) {
-                $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-                $file->move(public_path('uploads/galeri'), $filename);
+                $photoPath = HostingStorageHelper::uploadFile($file, 'galeri');
+                
+                if (!$photoPath) {
+                    return redirect()->back()->with('error', 'Gagal mengupload foto galeri. Silakan coba lagi.');
+                }
+                
                 $foto = GaleriFoto::create([
                     'galeri_id' => $galeri->id,
-                    'foto' => $filename,
+                    'foto' => $photoPath,
                     'is_thumbnail' => false,
                 ]);
                 $foto_ids[] = $foto->id;
@@ -71,13 +76,27 @@ class GaleriFotoController extends Controller
         ]);
         // Ganti foto jika ada upload baru
         if ($request->hasFile('foto')) {
-            if ($foto->foto && file_exists(public_path('uploads/galeri/' . $foto->foto))) {
-                unlink(public_path('uploads/galeri/' . $foto->foto));
+            // Hapus foto lama jika ada
+            if ($foto->foto) {
+                Storage::disk('public')->delete($foto->foto);
+                // Also delete from hosting paths
+                if (HostingStorageHelper::isHostingEnvironment()) {
+                    $paths = HostingStorageHelper::getHostingPaths();
+                    $hostingFile = $paths['public_storage'] . '/' . $foto->foto;
+                    if (file_exists($hostingFile)) {
+                        @unlink($hostingFile);
+                    }
+                }
             }
+            
             $file = $request->file('foto');
-            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-            $file->move(public_path('uploads/galeri'), $filename);
-            $foto->foto = $filename;
+            $photoPath = HostingStorageHelper::uploadFile($file, 'galeri');
+            
+            if (!$photoPath) {
+                return redirect()->back()->with('error', 'Gagal mengupload foto galeri. Silakan coba lagi.');
+            }
+            
+            $foto->foto = $photoPath;
         }
         // Set thumbnail jika dicentang
         if ($request->has('is_thumbnail')) {
@@ -94,9 +113,20 @@ class GaleriFotoController extends Controller
     public function destroy($galeri_id, $foto_id)
     {
         $foto = GaleriFoto::findOrFail($foto_id);
-        if ($foto->foto && file_exists(public_path('uploads/galeri/' . $foto->foto))) {
-            unlink(public_path('uploads/galeri/' . $foto->foto));
+        
+        // Hapus file foto jika ada
+        if ($foto->foto) {
+            Storage::disk('public')->delete($foto->foto);
+            // Also delete from hosting paths
+            if (HostingStorageHelper::isHostingEnvironment()) {
+                $paths = HostingStorageHelper::getHostingPaths();
+                $hostingFile = $paths['public_storage'] . '/' . $foto->foto;
+                if (file_exists($hostingFile)) {
+                    @unlink($hostingFile);
+                }
+            }
         }
+        
         $foto->delete();
         return back()->with('success', 'Foto berhasil dihapus');
     }

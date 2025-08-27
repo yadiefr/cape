@@ -189,7 +189,7 @@ class SettingsController extends Controller
                 $file = $request->file($fileKey);
                 \Log::info("File found for setting {$key}: " . $file->getClientOriginalName());
                 
-                // Validate file
+                // Validate file first
                 $validator = Validator::make(
                     ['file' => $file],
                     ['file' => 'image|mimes:jpeg,png,jpg,gif|max:2048']
@@ -197,7 +197,14 @@ class SettingsController extends Controller
                 
                 if ($validator->fails()) {
                     \Log::error("File validation failed for {$key}: " . implode(', ', $validator->errors()->all()));
-                    continue;
+                    throw new \Exception("File validation failed for {$key}: " . implode(', ', $validator->errors()->all()));
+                }
+                
+                // Check if file is actually valid
+                if (!$file->isValid()) {
+                    $uploadError = $file->getError();
+                    \Log::error("File upload error for {$key}: Upload error code {$uploadError}");
+                    throw new \Exception("File upload failed for {$key}: Upload error code {$uploadError}");
                 }
                 
                 // Get the setting to check for existing file
@@ -212,6 +219,13 @@ class SettingsController extends Controller
                 // Generate a unique filename
                 $filename = $key . '_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
                 
+                // Generate a unique filename
+                $filename = $key . '_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+                
+                // Get file info before processing (to avoid temp file issues)
+                $originalName = $file->getClientOriginalName();
+                $fileSize = $file->getSize();
+                
                 try {
                     // Ensure directories exist
                     $storagePath = storage_path('app/public/settings');
@@ -225,9 +239,6 @@ class SettingsController extends Controller
                         mkdir($publicStoragePath, 0755, true);
                         chmod($publicStoragePath, 0755);
                     }
-                    
-                    // Generate a unique filename
-                    $filename = $key . '_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
                     
                     // Use HostingStorageHelper for hosting environments
                     if (HostingStorageHelper::isHostingEnvironment()) {
@@ -300,13 +311,20 @@ class SettingsController extends Controller
                     $uploadedFiles[] = [
                         'key' => $key,
                         'path' => $path,
-                        'original_name' => $file->getClientOriginalName(),
-                        'size' => $file->getSize()
+                        'original_name' => $originalName,
+                        'size' => $fileSize
                     ];
                     
                 } catch (\Exception $e) {
                     \Log::error("Error handling file upload for {$key}: " . $e->getMessage());
-                    throw $e;
+                    \Log::error("Stack trace: " . $e->getTraceAsString());
+                    
+                    // Return more specific error message
+                    if (strpos($e->getMessage(), 'stat failed') !== false) {
+                        throw new \Exception("File processing error: Temporary file was removed too early. Please try uploading a smaller file or contact administrator.");
+                    } else {
+                        throw new \Exception("File upload error for {$key}: " . $e->getMessage());
+                    }
                 }
             }
         }

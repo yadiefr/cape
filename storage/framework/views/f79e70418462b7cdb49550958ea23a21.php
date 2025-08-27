@@ -611,4 +611,4 @@
     </script>
 </body>
 </html>
-<?php /**PATH C:\wamp64\www\website-smk3\resources\views/berita/index.blade.php ENDPATH**/ ?>
+<?php /**PATH C:\wamp64\www\website-smk3\resources\views\berita\index.blade.php ENDPATH**/ ?>

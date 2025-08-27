@@ -969,6 +969,27 @@
             }
         });
         
+        // Attachment download tracking
+        document.addEventListener('DOMContentLoaded', function() {
+            const attachmentDownloads = document.querySelectorAll('.attachment-download');
+            
+            attachmentDownloads.forEach(function(downloadBtn) {
+                downloadBtn.addEventListener('click', function(e) {
+                    const fileName = this.closest('.attachment-item').querySelector('.attachment-name').textContent.trim();
+                    console.log('Downloading attachment:', fileName);
+                    
+                    // Add visual feedback
+                    const originalText = this.innerHTML;
+                    this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Downloading...';
+                    
+                    // Reset button after 2 seconds
+                    setTimeout(() => {
+                        this.innerHTML = originalText;
+                    }, 2000);
+                });
+            });
+        });
+        
         // Copy to clipboard function
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text).then(function() {
@@ -1010,4 +1031,4 @@
     </script>
 </body>
 </html>
-<?php /**PATH C:\wamp64\www\website-smk3\resources\views/berita/show.blade.php ENDPATH**/ ?>
+<?php /**PATH C:\wamp64\www\website-smk3\resources\views\berita\show.blade.php ENDPATH**/ ?>

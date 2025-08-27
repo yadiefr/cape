@@ -120,14 +120,17 @@
                                     <input type="hidden" name="settings[email_sekolah][key]" value="email_sekolah">
                                     <input type="hidden" name="settings[email_sekolah][group]" value="sekolah">
                                 </div>
-                            </div>                            <!-- Logo Sekolah -->
+                            </div>                            
+                            
+                            <!-- Logo Sekolah -->
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-start">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Logo Sekolah</label>
                                     <p class="text-sm text-gray-500">Logo resmi sekolah (max 2MB).</p>
                                 </div>
                                 <div class="md:col-span-2">
-                                    <div class="space-y-2">                                        @if(isset($settings['logo_sekolah']) && !empty($settings['logo_sekolah']))
+                                    <div class="space-y-2">                                        
+                                        @if(isset($settings['logo_sekolah']) && !empty($settings['logo_sekolah']))
                                             <div class="mb-2">
                                                 <img src="{{ asset('storage/' . $settings['logo_sekolah']) }}" 
                                                      alt="Logo Sekolah" 

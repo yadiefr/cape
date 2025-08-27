@@ -743,6 +743,12 @@
                                     <span>Pengaturan</span>
                                 </a>
                             </li>
+                            <li>
+                                <a href="{{ route('admin.storage-sync.index') }}" class="flex items-center space-x-3 p-3 rounded-lg {{ request()->routeIs('admin.storage-sync.*') ? 'bg-gradient-to-r from-blue-500 to-blue-600 text-white font-medium shadow-sm' : 'hover:bg-gray-50 transition-all duration-300 group' }}">
+                                    <i class="fas fa-sync-alt {{ request()->routeIs('admin.storage-sync.*') ? '' : 'text-gray-600 group-hover:text-blue-600' }}"></i>
+                                    <span>Storage Sync</span>
+                                </a>
+                            </li>
 
                             <li class="pt-2">
                                 <div class="text-xs uppercase text-gray-500 font-semibold px-3 py-2">Sistem</div>
@@ -889,6 +895,9 @@
                                 </a>
                                 <a href="{{ route('admin.settings.index') }}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 group">
                                     <i class="fas fa-cog mr-2 text-blue-500 group-hover:text-blue-600"></i> Pengaturan
+                                </a>
+                                <a href="{{ route('admin.storage-sync.index') }}" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-50 group">
+                                    <i class="fas fa-sync-alt mr-2 text-blue-500 group-hover:text-blue-600"></i> Storage Sync
                                 </a>
                                 <div class="border-t border-gray-100 my-1"></div>
                                 <form method="POST" action="{{ route('admin.logout') }}">

@@ -116,6 +116,82 @@ if (!function_exists('setting_with_cache_bust')) {
     }
 }
 
+if (!function_exists('fix_storage_paths')) {
+    /**
+     * Fix storage paths for hosting environments where files are in wrong location
+     *
+     * @return array Results of the fix operation
+     */
+    function fix_storage_paths()
+    {
+        $results = [
+            'moved' => 0,
+            'errors' => 0,
+            'messages' => []
+        ];
+        
+        // Possible wrong paths that hosting might create
+        $wrongPaths = [
+            storage_path('public/settings'),         // /home/user/project_laravel/storage/public/settings
+            storage_path('public'),                  // /home/user/project_laravel/storage/public (as base)
+        ];
+        
+        $correctPath = storage_path('app/public/settings'); // /home/user/project_laravel/storage/app/public/settings
+        
+        foreach ($wrongPaths as $wrongPath) {
+            if (!is_dir($wrongPath)) {
+                continue;
+            }
+            
+            $results['messages'][] = "Checking wrong path: {$wrongPath}";
+            
+            // Get all files from wrong directory
+            $files = glob($wrongPath . '/*.*');
+            
+            foreach ($files as $wrongFile) {
+                if (!is_file($wrongFile)) {
+                    continue;
+                }
+                
+                $filename = basename($wrongFile);
+                $correctFile = $correctPath . '/' . $filename;
+                
+                // Ensure correct directory exists
+                if (!is_dir($correctPath)) {
+                    @mkdir($correctPath, 0755, true);
+                }
+                
+                // Move file to correct location
+                if (@copy($wrongFile, $correctFile)) {
+                    @unlink($wrongFile); // Remove from wrong location
+                    $results['moved']++;
+                    $results['messages'][] = "Moved: {$filename}";
+                    
+                    // Also copy to public storage
+                    $publicFile = public_path('storage/settings/' . $filename);
+                    $publicDir = dirname($publicFile);
+                    if (!is_dir($publicDir)) {
+                        @mkdir($publicDir, 0755, true);
+                    }
+                    @copy($correctFile, $publicFile);
+                    
+                } else {
+                    $results['errors']++;
+                    $results['messages'][] = "Failed to move: {$filename}";
+                }
+            }
+            
+            // Remove empty wrong directory
+            if (is_dir($wrongPath) && count(scandir($wrongPath)) <= 2) {
+                @rmdir($wrongPath);
+                $results['messages'][] = "Removed empty directory: {$wrongPath}";
+            }
+        }
+        
+        return $results;
+    }
+}
+
 if (!function_exists('sync_storage_file_to_public')) {
     /**
      * Sync file from storage to public folder (for hosting environments)
@@ -126,7 +202,19 @@ if (!function_exists('sync_storage_file_to_public')) {
     function sync_storage_file_to_public($relative_path)
     {
         $storage_path = storage_path('app/public/' . $relative_path);
-        $public_path = public_path('storage/' . $relative_path);
+        
+        // Detect hosting environment
+        $basePath = base_path();
+        $isHosting = (strpos($basePath, '/home/') === 0 && strpos($basePath, 'public_html') === false);
+        
+        if ($isHosting) {
+            // Hosting environment: copy to public_html/storage/
+            $publicHtmlPath = dirname($basePath) . '/public_html';
+            $public_path = $publicHtmlPath . '/storage/' . $relative_path;
+        } else {
+            // Local/development environment: copy to public/storage/
+            $public_path = public_path('storage/' . $relative_path);
+        }
         
         // Ensure source file exists
         if (!file_exists($storage_path)) {
@@ -140,7 +228,13 @@ if (!function_exists('sync_storage_file_to_public')) {
         }
         
         // Copy file
-        return @copy($storage_path, $public_path);
+        $success = @copy($storage_path, $public_path);
+        
+        if ($success && $isHosting) {
+            @chmod($public_path, 0644);
+        }
+        
+        return $success;
     }
 }
 

@@ -18,6 +18,7 @@ use App\Http\Controllers\Admin\RuanganController;
 use App\Http\Controllers\Admin\Ujian\JenisUjianController;
 use App\Http\Controllers\Admin\PengawasController;
 use App\Http\Controllers\Admin\ProfileController;
+use App\Http\Controllers\Admin\StorageSyncController;
 use App\Http\Controllers\CalendarController;
 use App\Models\Jurusan;
 use App\Models\Pengumuman;
@@ -159,6 +160,12 @@ Route::middleware(['auth:web,guru,siswa'])->group(function () {
         Route::get('/settings', [App\Http\Controllers\Admin\SettingsController::class, 'index'])->name('settings.index');
         Route::post('/settings', [App\Http\Controllers\Admin\SettingsController::class, 'store'])->name('settings.store');
         Route::put('/settings', [App\Http\Controllers\Admin\SettingsController::class, 'update'])->name('settings.update');
+        
+        // Storage Sync Routes
+        Route::prefix('storage-sync')->name('storage-sync.')->group(function () {
+            Route::get('/', [StorageSyncController::class, 'index'])->name('index');
+            Route::post('/sync', [StorageSyncController::class, 'sync'])->name('sync');
+        });
         
         // Jadwal Settings Routes
         Route::prefix('settings/jadwal')->name('settings.jadwal.')->group(function () {

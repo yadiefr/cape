@@ -105,8 +105,8 @@
             <ul class="nav-menu">                
                 <li><a href="#features" class="nav-link">Keunggulan</a></li>
                 <li><a href="#programs" class="nav-link">Program Keahlian</a></li>
-                <li><a href="#news" class="nav-link">Berita</a></li>
-                <li><a href="#gallery" class="nav-link">Galeri</a></li>                
+                <li><a href="{{ route('berita.index') }}" class="nav-link">Berita</a></li>
+                <li><a href="{{ route('galeri.index') }}" class="nav-link">Galeri</a></li>                
                 <li><a href="/login" class="btn btn-primary">Login</a></li>
                 </li>
             </ul>
@@ -371,8 +371,8 @@
                 <div class="news-card" data-aos="fade-up" data-aos-delay="{{ $loop->index * 100 }}">
                     <div class="news-image">
                         <div class="news-category">Berita</div>
-                        @if($b->lampiran)
-                            <img src="{{ asset('storage/' . $b->lampiran) }}" alt="{{ $b->judul }}" class="w-full h-48 object-cover">
+                        @if($b->foto)
+                            <img src="{{ asset('storage/' . $b->foto) }}" alt="{{ $b->judul }}" class="w-full h-48 object-cover">
                         @else
                             <div class="w-full h-48 bg-gray-200 flex items-center justify-center text-gray-500">
                                 <i class="fas fa-image fa-3x"></i>
@@ -393,13 +393,30 @@
                 @endforeach
             </div>
             
-            <div class="news-pagination" data-aos="fade-up">
-                <a href="#" class="pagination-arrow disabled"><i class="fas fa-chevron-left"></i></a>
-                <a href="#" class="pagination-number active">1</a>
-                <a href="#" class="pagination-number">2</a>
-                <a href="#" class="pagination-number">3</a>
-                <a href="#" class="pagination-arrow"><i class="fas fa-chevron-right"></i></a>
+            <!-- View All Berita Button -->
+            @if($berita && $berita->count() > 0)
+            <div style="text-align: center; margin-top: 4rem; margin-bottom: 2rem;">
+                <a href="{{ route('berita.index') }}" 
+                   style="display: inline-flex; align-items: center; padding: 1rem 2rem; background: linear-gradient(135deg, #3b82f6); color: white !important; text-decoration: none; border-radius: 1rem; box-shadow: 0 10px 25px rgba(0,0,0,0.2); transition: all 0.3s ease; font-weight: 600; font-size: 1.1rem;">
+                    <div style="background: rgba(255,255,255,0.2); border-radius: 50%; padding: 0.75rem; margin-right: 1rem;">
+                        <i class="fas fa-newspaper" style="color: white; font-size: 1.2rem;"></i>
+                    </div>
+                    <div style="text-align: left;">
+                        <div style="font-weight: bold; font-size: 1.2rem; color: white;">Lihat Semua Berita</div>
+                        <div style="font-size: 0.9rem; opacity: 0.9; color: white;">Berita dan informasi terbaru</div>
+                    </div>
+                    <div style="margin-left: 1.5rem; color: white;">
+                        <i class="fas fa-arrow-right" style="font-size: 1.1rem;"></i>
+                    </div>
+                </a>
+                
+                <!-- Small description -->
+                <p style="color: #666; margin-top: 1.5rem; font-size: 1rem; max-width: 500px; margin-left: auto; margin-right: auto;">
+                    <i class="fas fa-info-circle" style="color: #3b82f6; margin-right: 0.5rem;"></i>
+                    Dapatkan informasi terkini tentang kegiatan dan pengumuman penting dari sekolah
+                </p>
             </div>
+            @endif
         </div>
     </section>
 

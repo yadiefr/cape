@@ -1,0 +1,9 @@
+<!-- Default No Image SVG Placeholder -->
+<svg width="80" height="64" viewBox="0 0 80 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="80" height="64" rx="8" fill="#F3F4F6"/>
+  <g opacity="0.4">
+    <path d="M24 20H56C57.1046 20 58 20.8954 58 22V42C58 43.1046 57.1046 44 56 44H24C22.8954 44 22 43.1046 22 42V22C22 20.8954 22.8954 20 24 20Z" stroke="#9CA3AF" stroke-width="2"/>
+    <path d="M28 28C29.1046 28 30 27.1046 30 26C30 24.8954 29.1046 24 28 24C26.8954 24 26 24.8954 26 26C26 27.1046 26.8954 28 28 28Z" fill="#9CA3AF"/>
+    <path d="M22 38L30 30L38 38L46 30L58 42V44C58 43.1046 57.1046 44 56 44H24C22.8954 44 22 43.1046 22 42V38Z" fill="#9CA3AF"/>
+  </g>
+</svg>

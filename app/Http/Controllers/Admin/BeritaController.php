@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Berita;
+use Illuminate\Support\Facades\Storage;
 
 class BeritaController extends Controller
 {
@@ -24,12 +25,22 @@ class BeritaController extends Controller
         $request->validate([
             'judul' => 'required',
             'isi' => 'required',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'lampiran' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048',
         ]);
+        
         $data = $request->only(['judul', 'isi']);
+        
+        // Handle foto upload
+        if ($request->hasFile('foto')) {
+            $data['foto'] = $request->file('foto')->store('berita_foto', 'public');
+        }
+        
+        // Handle lampiran upload
         if ($request->hasFile('lampiran')) {
             $data['lampiran'] = $request->file('lampiran')->store('lampiran_berita', 'public');
         }
+        
         Berita::create($data);
         return redirect()->route('admin.berita.index')->with('success', 'Berita berhasil ditambahkan');
     }
@@ -46,13 +57,52 @@ class BeritaController extends Controller
         $request->validate([
             'judul' => 'required',
             'isi' => 'required',
+            'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'lampiran' => 'nullable|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:2048',
         ]);
+        
         $data = $request->only(['judul', 'isi']);
+        
+        // Handle foto upload
+        if ($request->hasFile('foto')) {
+            // Hapus foto lama jika ada
+            if ($berita->foto && Storage::disk('public')->exists($berita->foto)) {
+                Storage::disk('public')->delete($berita->foto);
+            }
+            // Upload foto baru
+            $data['foto'] = $request->file('foto')->store('berita_foto', 'public');
+        }
+        
+        // Handle lampiran upload
         if ($request->hasFile('lampiran')) {
+            // Hapus file lama jika ada
+            if ($berita->lampiran && Storage::disk('public')->exists($berita->lampiran)) {
+                Storage::disk('public')->delete($berita->lampiran);
+            }
+            // Upload file baru
             $data['lampiran'] = $request->file('lampiran')->store('lampiran_berita', 'public');
         }
+        
         $berita->update($data);
         return redirect()->route('admin.berita.index')->with('success', 'Berita berhasil diperbarui');
+    }
+
+    public function destroy($id)
+    {
+        $berita = Berita::findOrFail($id);
+        
+        // Hapus foto jika ada
+        if ($berita->foto && Storage::disk('public')->exists($berita->foto)) {
+            Storage::disk('public')->delete($berita->foto);
+        }
+        
+        // Hapus file lampiran jika ada
+        if ($berita->lampiran && Storage::disk('public')->exists($berita->lampiran)) {
+            Storage::disk('public')->delete($berita->lampiran);
+        }
+        
+        $berita->delete();
+        
+        return redirect()->route('admin.berita.index')->with('success', 'Berita berhasil dihapus');
     }
 }

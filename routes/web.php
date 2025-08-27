@@ -61,6 +61,10 @@ Route::get('/galeri', [GaleriController::class, 'index'])->name('galeri.index');
 Route::get('/galeri/{id}', [GaleriController::class, 'show'])->name('galeri.show');
 Route::get('/api/galeri/{id}/photos', [GaleriController::class, 'getPhotos'])->name('galeri.photos');
 
+// Berita Routes
+Route::get('/berita', [App\Http\Controllers\BeritaController::class, 'index'])->name('berita.index');
+Route::get('/berita/{id}', [App\Http\Controllers\BeritaController::class, 'show'])->name('berita.show');
+
 // Route untuk login dan logout
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login'])->name('login.process');

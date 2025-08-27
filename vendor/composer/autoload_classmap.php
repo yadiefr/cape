@@ -8,6 +8,7 @@ $baseDir = dirname($vendorDir);
 return array(
     'App\\Console\\Commands\\CleanDummyAbsensi' => $baseDir . '/app/Console/Commands/CleanDummyAbsensi.php',
     'App\\Console\\Commands\\CleanInvalidSchedules' => $baseDir . '/app/Console/Commands/CleanInvalidSchedules.php',
+    'App\\Console\\Commands\\ClearSettingsCache' => $baseDir . '/app/Console/Commands/ClearSettingsCache.php',
     'App\\Console\\Commands\\DebugJadwal' => $baseDir . '/app/Console/Commands/DebugJadwal.php',
     'App\\Console\\Commands\\MonitorBelSystem' => $baseDir . '/app/Console/Commands/MonitorBelSystem.php',
     'App\\Console\\Commands\\SetupHostingStorage' => $baseDir . '/app/Console/Commands/SetupHostingStorage.php',
@@ -169,7 +170,6 @@ return array(
     'App\\Models\\PraktikKerjaLapangan' => $baseDir . '/app/Models/PraktikKerjaLapangan.php',
     'App\\Models\\Ruangan' => $baseDir . '/app/Models/Ruangan.php',
     'App\\Models\\SchoolBell' => $baseDir . '/app/Models/SchoolBell.php',
-    'App\\Models\\Setting' => $baseDir . '/app/Models/Setting.php',
     'App\\Models\\Settings' => $baseDir . '/app/Models/Settings.php',
     'App\\Models\\SettingsJadwal' => $baseDir . '/app/Models/SettingsJadwal.php',
     'App\\Models\\Siswa' => $baseDir . '/app/Models/Siswa.php',
@@ -177,6 +177,7 @@ return array(
     'App\\Models\\Tugas' => $baseDir . '/app/Models/Tugas.php',
     'App\\Models\\TugasSiswa' => $baseDir . '/app/Models/TugasSiswa.php',
     'App\\Models\\User' => $baseDir . '/app/Models/User.php',
+    'App\\Observers\\SettingsObserver' => $baseDir . '/app/Observers/SettingsObserver.php',
     'App\\Providers\\AppServiceProvider' => $baseDir . '/app/Providers/AppServiceProvider.php',
     'App\\Providers\\AuthServiceProvider' => $baseDir . '/app/Providers/AuthServiceProvider.php',
     'App\\Providers\\BroadcastServiceProvider' => $baseDir . '/app/Providers/BroadcastServiceProvider.php',

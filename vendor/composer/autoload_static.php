@@ -649,6 +649,7 @@ class ComposerStaticInit9fdb036d7e7e5101d04433507f7955c2
     public static $classMap = array (
         'App\\Console\\Commands\\CleanDummyAbsensi' => __DIR__ . '/../..' . '/app/Console/Commands/CleanDummyAbsensi.php',
         'App\\Console\\Commands\\CleanInvalidSchedules' => __DIR__ . '/../..' . '/app/Console/Commands/CleanInvalidSchedules.php',
+        'App\\Console\\Commands\\ClearSettingsCache' => __DIR__ . '/../..' . '/app/Console/Commands/ClearSettingsCache.php',
         'App\\Console\\Commands\\DebugJadwal' => __DIR__ . '/../..' . '/app/Console/Commands/DebugJadwal.php',
         'App\\Console\\Commands\\MonitorBelSystem' => __DIR__ . '/../..' . '/app/Console/Commands/MonitorBelSystem.php',
         'App\\Console\\Commands\\SetupHostingStorage' => __DIR__ . '/../..' . '/app/Console/Commands/SetupHostingStorage.php',
@@ -810,7 +811,6 @@ class ComposerStaticInit9fdb036d7e7e5101d04433507f7955c2
         'App\\Models\\PraktikKerjaLapangan' => __DIR__ . '/../..' . '/app/Models/PraktikKerjaLapangan.php',
         'App\\Models\\Ruangan' => __DIR__ . '/../..' . '/app/Models/Ruangan.php',
         'App\\Models\\SchoolBell' => __DIR__ . '/../..' . '/app/Models/SchoolBell.php',
-        'App\\Models\\Setting' => __DIR__ . '/../..' . '/app/Models/Setting.php',
         'App\\Models\\Settings' => __DIR__ . '/../..' . '/app/Models/Settings.php',
         'App\\Models\\SettingsJadwal' => __DIR__ . '/../..' . '/app/Models/SettingsJadwal.php',
         'App\\Models\\Siswa' => __DIR__ . '/../..' . '/app/Models/Siswa.php',
@@ -818,6 +818,7 @@ class ComposerStaticInit9fdb036d7e7e5101d04433507f7955c2
         'App\\Models\\Tugas' => __DIR__ . '/../..' . '/app/Models/Tugas.php',
         'App\\Models\\TugasSiswa' => __DIR__ . '/../..' . '/app/Models/TugasSiswa.php',
         'App\\Models\\User' => __DIR__ . '/../..' . '/app/Models/User.php',
+        'App\\Observers\\SettingsObserver' => __DIR__ . '/../..' . '/app/Observers/SettingsObserver.php',
         'App\\Providers\\AppServiceProvider' => __DIR__ . '/../..' . '/app/Providers/AppServiceProvider.php',
         'App\\Providers\\AuthServiceProvider' => __DIR__ . '/../..' . '/app/Providers/AuthServiceProvider.php',
         'App\\Providers\\BroadcastServiceProvider' => __DIR__ . '/../..' . '/app/Providers/BroadcastServiceProvider.php',

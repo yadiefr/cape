@@ -82,20 +82,25 @@ class GaleriFotoController extends Controller
                 // Also delete from hosting paths
                 if (HostingStorageHelper::isHostingEnvironment()) {
                     $paths = HostingStorageHelper::getHostingPaths();
-                    $hostingFile = $paths['public_storage'] . '/' . $foto->foto;
+                    $hostingFile = $paths['public_uploads'] . '/' . $foto->foto;
                     if (file_exists($hostingFile)) {
                         @unlink($hostingFile);
                     }
+                    // Also delete from current uploads
+                    $currentFile = $paths['current_uploads'] . '/' . $foto->foto;
+                    if (file_exists($currentFile)) {
+                        @unlink($currentFile);
+                    }
                 }
             }
-            
+
             $file = $request->file('foto');
             $photoPath = HostingStorageHelper::uploadFile($file, 'galeri');
-            
+
             if (!$photoPath) {
                 return redirect()->back()->with('error', 'Gagal mengupload foto galeri. Silakan coba lagi.');
             }
-            
+
             $foto->foto = $photoPath;
         }
         // Set thumbnail jika dicentang
@@ -113,20 +118,25 @@ class GaleriFotoController extends Controller
     public function destroy($galeri_id, $foto_id)
     {
         $foto = GaleriFoto::findOrFail($foto_id);
-        
+
         // Hapus file foto jika ada
         if ($foto->foto) {
             Storage::disk('public')->delete($foto->foto);
             // Also delete from hosting paths
             if (HostingStorageHelper::isHostingEnvironment()) {
                 $paths = HostingStorageHelper::getHostingPaths();
-                $hostingFile = $paths['public_storage'] . '/' . $foto->foto;
+                $hostingFile = $paths['public_uploads'] . '/' . $foto->foto;
                 if (file_exists($hostingFile)) {
                     @unlink($hostingFile);
                 }
+                // Also delete from current uploads
+                $currentFile = $paths['current_uploads'] . '/' . $foto->foto;
+                if (file_exists($currentFile)) {
+                    @unlink($currentFile);
+                }
             }
         }
-        
+
         $foto->delete();
         return back()->with('success', 'Foto berhasil dihapus');
     }
@@ -136,7 +146,7 @@ class GaleriFotoController extends Controller
     {
         $foto = GaleriFoto::findOrFail($id);
         $paths = HostingStorageHelper::getHostingPaths();
-        
+
         $debug = [
             'foto_id' => $foto->id,
             'foto_path' => $foto->foto,
@@ -146,10 +156,11 @@ class GaleriFotoController extends Controller
             'file_checks' => [
                 'laravel_storage' => file_exists(storage_path('app/public/' . $foto->foto)),
                 'public_storage' => file_exists($paths['public_storage'] . '/' . $foto->foto),
-                'current_storage' => file_exists($paths['current_storage'] . '/' . $foto->foto),
+                'public_uploads' => file_exists($paths['public_uploads'] . '/' . $foto->foto),
+                'current_uploads' => file_exists($paths['current_uploads'] . '/' . $foto->foto),
             ]
         ];
-        
+
         return response()->json($debug);
     }
 
@@ -158,19 +169,19 @@ class GaleriFotoController extends Controller
     {
         $fotos = GaleriFoto::whereNotNull('foto')->get();
         $paths = HostingStorageHelper::getHostingPaths();
-        
+
         $results = [];
         foreach ($fotos as $foto) {
             $results[] = [
                 'id' => $foto->id,
                 'path' => $foto->foto,
                 'laravel_exists' => file_exists(storage_path('app/public/' . $foto->foto)),
-                'public_exists' => file_exists($paths['public_storage'] . '/' . $foto->foto),
-                'current_exists' => file_exists($paths['current_storage'] . '/' . $foto->foto),
+                'public_exists' => file_exists($paths['public_uploads'] . '/' . $foto->foto),
+                'current_exists' => file_exists($paths['current_uploads'] . '/' . $foto->foto),
                 'url' => $foto->foto_url
             ];
         }
-        
+
         return response()->json([
             'total_files' => count($results),
             'files' => $results,
@@ -185,17 +196,17 @@ class GaleriFotoController extends Controller
         $fotos = GaleriFoto::whereNotNull('foto')->get();
         $paths = HostingStorageHelper::getHostingPaths();
         $results = [];
-        
+
         foreach ($fotos as $foto) {
             $sourceFile = storage_path('app/public/' . $foto->foto);
-            $targetFile = $paths['public_storage'] . '/' . $foto->foto;
-            
+            $targetFile = $paths['public_uploads'] . '/' . $foto->foto;
+
             if (file_exists($sourceFile) && !file_exists($targetFile)) {
                 $targetDir = dirname($targetFile);
                 if (!is_dir($targetDir)) {
                     \Illuminate\Support\Facades\File::makeDirectory($targetDir, 0755, true);
                 }
-                
+
                 if (copy($sourceFile, $targetFile)) {
                     @chmod($targetFile, 0644);
                     $results[] = ['id' => $foto->id, 'path' => $foto->foto, 'status' => 'synced'];
@@ -206,7 +217,7 @@ class GaleriFotoController extends Controller
                 $results[] = ['id' => $foto->id, 'path' => $foto->foto, 'status' => 'already_exists_or_no_source'];
             }
         }
-        
+
         return response()->json([
             'message' => 'Sync completed',
             'results' => $results,
@@ -219,10 +230,10 @@ class GaleriFotoController extends Controller
     {
         $status = HostingStorageHelper::getHostingStatus();
         $status['galeri_specific'] = [
-            'galeri_directory_exists' => is_dir(HostingStorageHelper::getHostingPaths()['public_storage'] . '/galeri'),
-            'sample_galeri_path' => HostingStorageHelper::getHostingPaths()['public_storage'] . '/galeri/',
+            'galeri_directory_exists' => is_dir(HostingStorageHelper::getHostingPaths()['public_uploads'] . '/galeri'),
+            'sample_galeri_path' => HostingStorageHelper::getHostingPaths()['public_uploads'] . '/galeri/',
         ];
-        
+
         return response()->json($status);
     }
 
@@ -232,22 +243,22 @@ class GaleriFotoController extends Controller
         $request->validate([
             'test_file' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
-        
+
         $file = $request->file('test_file');
         $result = HostingStorageHelper::uploadFile($file, 'galeri');
-        
+
         $paths = HostingStorageHelper::getHostingPaths();
-        
+
         return response()->json([
             'upload_result' => $result,
             'is_hosting' => HostingStorageHelper::isHostingEnvironment(),
             'paths' => $paths,
             'file_checks' => [
                 'laravel_storage' => file_exists(storage_path('app/public/' . $result)),
-                'public_storage' => file_exists($paths['public_storage'] . '/' . $result),
-                'current_storage' => file_exists($paths['current_storage'] . '/' . $result),
+                'public_uploads' => file_exists($paths['public_uploads'] . '/' . $result),
+                'current_uploads' => file_exists($paths['current_uploads'] . '/' . $result),
             ],
-            'expected_url' => $result ? asset('storage/' . $result) : null
+            'expected_url' => $result ? asset('uploads/' . $result) : null
         ]);
     }
 }

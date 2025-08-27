@@ -34,12 +34,12 @@ class HostingStorageHelper
     public static function getHostingPaths(): array
     {
         $basePath = base_path();
-        
+
         // Detect actual hosting structure
         if (strpos($basePath, '/home/') === 0) {
             // Hosting environment detected
             $userDir = dirname($basePath); // /home/smkpgric from /home/smkpgric/cape
-            
+
             return [
                 'current_laravel' => $basePath,
                 'laravel_project' => $userDir . '/project_laravel',
@@ -47,6 +47,9 @@ class HostingStorageHelper
                 'current_storage' => $basePath . '/storage/app/public',
                 'laravel_storage' => $userDir . '/project_laravel/storage/app/public',
                 'public_storage' => $userDir . '/public_html/storage',
+                // Path yang benar untuk hosting - uploads directory
+                'public_uploads' => $userDir . '/public_html/uploads',
+                'current_uploads' => $basePath . '/public/uploads',
             ];
         } else {
             // Fallback untuk localhost atau struktur lain
@@ -57,6 +60,9 @@ class HostingStorageHelper
                 'current_storage' => $basePath . '/storage/app/public',
                 'laravel_storage' => base_path('../project_laravel/storage/app/public'),
                 'public_storage' => base_path('../public_html/storage'),
+                // Path yang benar untuk hosting - uploads directory
+                'public_uploads' => base_path('../public_html/uploads'),
+                'current_uploads' => $basePath . '/public/uploads',
             ];
         }
     }
@@ -198,13 +204,13 @@ class HostingStorageHelper
             Log::info("Hosting upload - Original: $originalName, Target: $relativePath");
             Log::info("Hosting paths: " . json_encode($paths));
 
-            // Target paths untuk hosting - langsung ke public_html
-            $publicStoragePath = $paths['public_storage'] . '/' . $relativePath;
-            $currentStoragePath = $paths['current_storage'] . '/' . $relativePath;
+            // Target paths untuk hosting - gunakan uploads directory
+            $publicUploadsPath = $paths['public_uploads'] . '/' . $relativePath;
+            $currentUploadsPath = $paths['current_uploads'] . '/' . $relativePath;
 
             // Ensure directories exist
-            $publicDir = dirname($publicStoragePath);
-            $currentDir = dirname($currentStoragePath);
+            $publicDir = dirname($publicUploadsPath);
+            $currentDir = dirname($currentUploadsPath);
 
             foreach ([$currentDir, $publicDir] as $dir) {
                 if (!is_dir($dir)) {
@@ -217,31 +223,31 @@ class HostingStorageHelper
                 }
             }
 
-            // Move uploaded file langsung ke public_html storage (lokasi utama)
+            // Move uploaded file langsung ke public_html/uploads (lokasi utama)
             if ($file->move($publicDir, $filename)) {
-                @chmod($publicStoragePath, 0644);
-                Log::info("File moved to public storage: $publicStoragePath");
+                @chmod($publicUploadsPath, 0644);
+                Log::info("File moved to public uploads: $publicUploadsPath");
 
-                // Copy juga ke current storage untuk konsistensi
-                if (copy($publicStoragePath, $currentStoragePath)) {
-                    @chmod($currentStoragePath, 0644);
-                    Log::info("File copied to current storage: $currentStoragePath");
+                // Copy juga ke current uploads untuk konsistensi
+                if (copy($publicUploadsPath, $currentUploadsPath)) {
+                    @chmod($currentUploadsPath, 0644);
+                    Log::info("File copied to current uploads: $currentUploadsPath");
                 } else {
-                    Log::warning("Failed to copy to current storage: $currentStoragePath");
+                    Log::warning("Failed to copy to current uploads: $currentUploadsPath");
                 }
 
                 // Double check file exists
-                $publicExists = file_exists($publicStoragePath);
-                Log::info("Final check - Public storage: " . ($publicExists ? 'EXISTS' : 'NOT FOUND'));
+                $publicExists = file_exists($publicUploadsPath);
+                Log::info("Final check - Public uploads: " . ($publicExists ? 'EXISTS' : 'NOT FOUND'));
 
                 if ($publicExists) {
                     return $relativePath;
                 } else {
-                    Log::error("File not found after move: $publicStoragePath");
+                    Log::error("File not found after move: $publicUploadsPath");
                     return null;
                 }
             } else {
-                Log::error("Failed to move file from temp to: $publicStoragePath");
+                Log::error("Failed to move file from temp to: $publicUploadsPath");
                 return null;
             }
 
@@ -260,24 +266,24 @@ class HostingStorageHelper
         if (!self::isHostingEnvironment()) {
             return true; // No need to sync in localhost
         }
-        
+
         $paths = self::getHostingPaths();
         $sourceFile = storage_path('app/public/' . $relativePath);
-        $targetFile = $paths['public_storage'] . '/' . $relativePath;
-        
+        $targetFile = $paths['public_uploads'] . '/' . $relativePath;
+
         // Ensure source file exists
         if (!file_exists($sourceFile)) {
             Log::warning("Source file not found for hosting sync: $sourceFile");
             return false;
         }
-        
+
         // Ensure target directory exists
         $targetDir = dirname($targetFile);
         if (!is_dir($targetDir)) {
             File::makeDirectory($targetDir, 0755, true);
             @chmod($targetDir, 0755);
         }
-        
+
         // Copy file
         try {
             if (File::copy($sourceFile, $targetFile)) {
@@ -347,29 +353,31 @@ class HostingStorageHelper
             'base_path' => base_path(),
             'timestamp' => now()->toISOString(),
         ];
-        
+
         if ($status['is_hosting']) {
             $paths = self::getHostingPaths();
-            
+
             $status['paths'] = $paths;
             $status['directory_status'] = [
                 'laravel_project_exists' => is_dir($paths['laravel_project']),
                 'public_html_exists' => is_dir($paths['public_html']),
                 'laravel_storage_exists' => is_dir($paths['laravel_storage']),
                 'public_storage_exists' => is_dir($paths['public_storage']),
+                'public_uploads_exists' => is_dir($paths['public_uploads']),
+                'current_uploads_exists' => is_dir($paths['current_uploads']),
             ];
-            
+
             // Check settings files
             try {
                 $imageSettings = Settings::where('type', 'image')->whereNotNull('value')->get();
                 $fileStatus = [];
-                
+
                 foreach ($imageSettings as $setting) {
                     if (empty($setting->value)) continue;
-                    
+
                     $sourceFile = storage_path('app/public/' . $setting->value);
-                    $targetFile = $paths['public_storage'] . '/' . $setting->value;
-                    
+                    $targetFile = $paths['public_uploads'] . '/' . $setting->value;
+
                     $fileStatus[] = [
                         'key' => $setting->key,
                         'path' => $setting->value,
@@ -378,15 +386,15 @@ class HostingStorageHelper
                         'needs_sync' => file_exists($sourceFile) && !file_exists($targetFile),
                     ];
                 }
-                
+
                 $status['files'] = $fileStatus;
                 $status['needs_sync'] = count(array_filter($fileStatus, fn($f) => $f['needs_sync'])) > 0;
-                
+
             } catch (\Exception $e) {
                 $status['error'] = $e->getMessage();
             }
         }
-        
+
         return $status;
     }
 }

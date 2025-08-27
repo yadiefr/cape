@@ -1,0 +1,1 @@
+<?php /**PATH C:\wamp64\www\website-smk3\resources\views\auth\change-password.blade.php ENDPATH**/ ?>

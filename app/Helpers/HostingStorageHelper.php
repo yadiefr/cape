@@ -17,7 +17,6 @@ class HostingStorageHelper
         $requestHost = request()->getHost();
         $forceHostingDomains = [
             'smkpgricikampek.my.id',
-            'smkpgricikampek.com',
             'localhost', // untuk testing
         ];
 
@@ -285,13 +284,26 @@ class HostingStorageHelper
 
             $relativePath = $directory . '/' . $filename;
 
-            // Get hosting paths
+            Log::info("Starting handleHostingUpload method");
+            Log::info("File details: Original Name - $originalName, Extension - $extension, Temp Path - $tempPath");
+            Log::info("Using directory: $directory, Filename: $filename");
+
+            // Log hosting paths
             $paths = self::getHostingPaths();
-            Log::info("Hosting upload - Original: $originalName, Target: $relativePath");
             Log::info("Hosting paths: " . json_encode($paths));
 
-            // Target paths untuk hosting - gunakan uploads directory
+            // Ensure public_uploads path is used
             $publicUploadsPath = $paths['public_uploads'] . '/' . $relativePath;
+            Log::info("Public uploads path: $publicUploadsPath");
+
+            // Check if public_uploads directory exists
+            if (!is_dir(dirname($publicUploadsPath))) {
+                Log::warning("Public uploads directory does not exist: " . dirname($publicUploadsPath));
+            } else {
+                Log::info("Public uploads directory exists: " . dirname($publicUploadsPath));
+            }
+
+            // Target paths untuk hosting - gunakan uploads directory
             $currentUploadsPath = $paths['current_uploads'] . '/' . $relativePath;
 
             Log::info("Target paths:");

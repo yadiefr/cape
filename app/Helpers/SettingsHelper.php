@@ -84,12 +84,63 @@ if (!function_exists('setting_with_cache_bust')) {
         $value = setting($key, $default);
         
         if ($asset_url && $value) {
-            $full_path = storage_path('app/public/' . $value);
-            $cache_bust = file_exists($full_path) ? '?v=' . filemtime($full_path) : '';
+            // Handle hosting environment where storage paths differ
+            $storage_file_path = storage_path('app/public/' . $value);
+            $public_file_path = public_path('storage/' . $value);
+            
+            $cache_bust = '';
+            
+            // Try to get file modification time for cache busting
+            if (file_exists($public_file_path)) {
+                $cache_bust = '?v=' . filemtime($public_file_path);
+            } elseif (file_exists($storage_file_path)) {
+                $cache_bust = '?v=' . filemtime($storage_file_path);
+                
+                // If file exists in storage but not in public, try to copy it
+                if (!file_exists($public_file_path)) {
+                    $public_dir = dirname($public_file_path);
+                    if (!is_dir($public_dir)) {
+                        @mkdir($public_dir, 0755, true);
+                    }
+                    @copy($storage_file_path, $public_file_path);
+                }
+            } else {
+                // Fallback: use current timestamp
+                $cache_bust = '?v=' . time();
+            }
+            
             return asset('storage/' . $value) . $cache_bust;
         }
         
         return $value;
+    }
+}
+
+if (!function_exists('sync_storage_file_to_public')) {
+    /**
+     * Sync file from storage to public folder (for hosting environments)
+     *
+     * @param string $relative_path Relative path from storage/app/public/
+     * @return bool
+     */
+    function sync_storage_file_to_public($relative_path)
+    {
+        $storage_path = storage_path('app/public/' . $relative_path);
+        $public_path = public_path('storage/' . $relative_path);
+        
+        // Ensure source file exists
+        if (!file_exists($storage_path)) {
+            return false;
+        }
+        
+        // Create directory if it doesn't exist
+        $public_dir = dirname($public_path);
+        if (!is_dir($public_dir)) {
+            @mkdir($public_dir, 0755, true);
+        }
+        
+        // Copy file
+        return @copy($storage_path, $public_path);
     }
 }
 

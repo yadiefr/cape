@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bell Test</title>
+    <meta name="csrf-token" content="test">
+</head>
+<body>
+    <h1>Bell System Test</h1>
+    <div id="status">Initializing...</div>
+    <button onclick="testBell()">Test Bell Manually</button>
+    <div id="logs"></div>
+
+    <script>
+    // Test script untuk debugging sistem bel
+    
+    function log(message) {
+        const logs = document.getElementById('logs');
+        logs.innerHTML += '<div>' + new Date().toLocaleTimeString() + ': ' + message + '</div>';
+        // console.log(message);
+    }
+    
+    function updateStatus(status) {
+        document.getElementById('status').textContent = status;
+        log('Status: ' + status);
+    }
+    
+    async function testBell() {
+        log('Testing bell API...');
+        
+        try {
+            const response = await fetch('/website-smk3/public/api/bel/check-current-time', {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
+            const data = await response.json();
+            log('API Response: ' + JSON.stringify(data, null, 2));
+            
+            if (data.shouldRing) {
+                log('Bell should ring: ' + data.bell.nama);
+                await playTestBeep();
+            } else {
+                log('No bells to ring at this time');
+            }
+            
+        } catch (error) {
+            log('Error: ' + error.message);
+        }
+    }
+    
+    async function playTestBeep() {
+        log('Playing test beep...');
+        
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 1.0);
+            
+            log('Beep played successfully');
+            
+        } catch (error) {
+            log('Audio error: ' + error.message);
+        }
+    }
+    
+    // Auto test every 10 seconds
+    setInterval(testBell, 10000);
+    updateStatus('Ready');
+    log('Test page loaded');
+    
+    </script>
+</body>
+</html>

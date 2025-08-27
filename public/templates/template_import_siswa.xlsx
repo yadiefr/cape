@@ -1,0 +1,2 @@
+nis,nisn,nama_lengkap,jenis_kelamin,tempat_lahir,tanggal_lahir,agama,alamat,telepon,email,kelas_id,jurusan_id,tahun_masuk,status,nama_ayah,nama_ibu,pekerjaan_ayah,pekerjaan_ibu,telepon_orangtua,alamat_orangtua
+1234567890,1234567890,John Doe,L,Jakarta,2000-01-01,Islam,"Jl. Contoh No. 1",081234567890,john.doe@example.com,1,1,2022,aktif,"Ayah John","Ibu John",Wiraswasta,"Ibu Rumah Tangga",081234567890,"Jl. Contoh No. 1"

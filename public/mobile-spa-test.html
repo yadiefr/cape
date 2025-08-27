@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile SPA Detection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .test-result {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid;
+        }
+        .success {
+            background-color: #d4edda;
+            border-left-color: #28a745;
+            color: #155724;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border-left-color: #ffc107;
+            color: #856404;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border-left-color: #17a2b8;
+            color: #0c5460;
+        }
+        .code {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            margin: 10px 0;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Mobile SPA Detection Test</h1>
+    <p>Halaman ini untuk testing deteksi mobile dan SPA behavior admin dashboard.</p>
+    
+    <div id="test-results"></div>
+    
+    <h2>Manual Tests</h2>
+    <button onclick="testMobileDetection()">Test Mobile Detection</button>
+    <button onclick="testWindowSize()">Test Window Size</button>
+    <button onclick="testUserAgent()">Test User Agent</button>
+    <button onclick="testTouchSupport()">Test Touch Support</button>
+    <button onclick="simulateMobile()">Simulate Mobile</button>
+    <button onclick="simulateDesktop()">Simulate Desktop</button>
+    
+    <h2>Konsol Commands</h2>
+    <div class="code">
+        // Copy paste ke developer console untuk testing:<br>
+        window.testMobileSPA()  // Test complete detection<br>
+        window.debugInfo()     // Show debug information<br>
+        window.forceMobile()   // Force mobile mode<br>
+        window.forceDesktop()  // Force desktop mode
+    </div>
+
+    <script>
+        // Copy function dari admin.blade.php untuk testing
+        function isMobileDeviceForSPA() {
+            // Check 1: Screen size
+            const screenWidth = window.screen.width;
+            const windowWidth = window.innerWidth;
+            
+            // Check 2: User Agent
+            const userAgent = navigator.userAgent.toLowerCase();
+            const isMobileUA = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+            
+            // Check 3: Touch support
+            const isTouchDevice = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0);
+            
+            // Check 4: CSS Media Query
+            const isMobileMediaQuery = window.matchMedia && window.matchMedia('(max-width: 1023px)').matches;
+            
+            // Check 5: Aspect ratio (portrait mode biasanya mobile)
+            const isPortrait = window.innerHeight > window.innerWidth;
+            
+            // Kombinasi check untuk deteksi mobile yang lebih akurat
+            const isMobileBySize = windowWidth < 1024 || screenWidth < 1024;
+            const isMobileByUA = isMobileUA;
+            const isMobileByTouch = isTouchDevice && isMobileMediaQuery;
+            const isMobileByOrientation = isPortrait && windowWidth < 768;
+            
+            // Final decision
+            const isMobile = isMobileBySize || isMobileByUA || isMobileByTouch || isMobileByOrientation;
+            
+            return {
+                isMobile,
+                details: {
+                    screenWidth,
+                    windowWidth,
+                    isMobileUA,
+                    isTouchDevice,
+                    isMobileMediaQuery,
+                    isPortrait,
+                    isMobileBySize,
+                    isMobileByUA,
+                    isMobileByTouch,
+                    isMobileByOrientation
+                }
+            };
+        }
+        
+        function showResult(title, content, type = 'info') {
+            const resultsDiv = document.getElementById('test-results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${type}`;
+            resultDiv.innerHTML = `<strong>${title}:</strong><br>${content}`;
+            resultsDiv.appendChild(resultDiv);
+        }
+        
+        function testMobileDetection() {
+            const result = isMobileDeviceForSPA();
+            const type = result.isMobile ? 'warning' : 'success';
+            const message = result.isMobile ? 'MOBILE DETECTED - SPA akan dinonaktifkan' : 'DESKTOP DETECTED - SPA akan aktif';
+            
+            showResult('Mobile Detection Test', `
+                ${message}<br>
+                <strong>Details:</strong><br>
+                - Screen Width: ${result.details.screenWidth}px<br>
+                - Window Width: ${result.details.windowWidth}px<br>
+                - Mobile UA: ${result.details.isMobileUA}<br>
+                - Touch Device: ${result.details.isTouchDevice}<br>
+                - Mobile Media Query: ${result.details.isMobileMediaQuery}<br>
+                - Portrait Mode: ${result.details.isPortrait}
+            `, type);
+        }
+        
+        function testWindowSize() {
+            const content = `
+                Screen Width: ${window.screen.width}px<br>
+                Screen Height: ${window.screen.height}px<br>
+                Window Width: ${window.innerWidth}px<br>
+                Window Height: ${window.innerHeight}px<br>
+                Device Pixel Ratio: ${window.devicePixelRatio}
+            `;
+            showResult('Window Size Test', content);
+        }
+        
+        function testUserAgent() {
+            const ua = navigator.userAgent;
+            const isMobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(ua);
+            const type = isMobile ? 'warning' : 'info';
+            showResult('User Agent Test', `
+                Mobile Detected: ${isMobile}<br>
+                User Agent: ${ua}
+            `, type);
+        }
+        
+        function testTouchSupport() {
+            const hasTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0);
+            const type = hasTouch ? 'warning' : 'info';
+            showResult('Touch Support Test', `
+                Touch Support: ${hasTouch}<br>
+                Max Touch Points: ${navigator.maxTouchPoints || 'N/A'}<br>
+                MS Max Touch Points: ${navigator.msMaxTouchPoints || 'N/A'}
+            `, type);
+        }
+        
+        function simulateMobile() {
+            // Temporarily modify window properties for testing
+            Object.defineProperty(navigator, 'userAgent', {
+                value: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_0 like Mac OS X) AppleWebKit/605.1.15',
+                configurable: true
+            });
+            showResult('Mobile Simulation', 'User Agent diubah ke iPhone. Refresh halaman untuk test.', 'warning');
+        }
+        
+        function simulateDesktop() {
+            Object.defineProperty(navigator, 'userAgent', {
+                value: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+                configurable: true
+            });
+            showResult('Desktop Simulation', 'User Agent diubah ke Windows Desktop. Refresh halaman untuk test.', 'success');
+        }
+        
+        // Global functions untuk console testing
+        window.testMobileSPA = function() {
+            console.clear();
+            const result = isMobileDeviceForSPA();
+            console.log('🔍 Mobile SPA Detection Test Results:');
+            console.log('=====================================');
+            console.log('Final Decision:', result.isMobile ? '📱 MOBILE (SPA DISABLED)' : '🖥️ DESKTOP (SPA ENABLED)');
+            console.log('Details:', result.details);
+            return result;
+        };
+        
+        window.debugInfo = function() {
+            console.log('🔧 Debug Information:');
+            console.log('====================');
+            console.log('Window Size:', `${window.innerWidth}x${window.innerHeight}`);
+            console.log('Screen Size:', `${window.screen.width}x${window.screen.height}`);
+            console.log('User Agent:', navigator.userAgent);
+            console.log('Touch Support:', ('ontouchstart' in window));
+            console.log('Max Touch Points:', navigator.maxTouchPoints);
+            console.log('Orientation Support:', screen.orientation !== undefined);
+        };
+        
+        window.forceMobile = function() {
+            localStorage.setItem('force-mobile-mode', 'true');
+            console.log('🚫 Mobile mode forced. Refresh untuk melihat efek.');
+        };
+        
+        window.forceDesktop = function() {
+            localStorage.setItem('force-desktop-mode', 'true');
+            console.log('✅ Desktop mode forced. Refresh untuk melihat efek.');
+        };
+        
+        // Auto run test on load
+        document.addEventListener('DOMContentLoaded', function() {
+            showResult('Page Loaded', 'Test page siap. Gunakan tombol di atas untuk testing atau console commands.', 'info');
+            testMobileDetection();
+        });
+        
+        // Window resize listener
+        window.addEventListener('resize', function() {
+            showResult('Window Resized', `New size: ${window.innerWidth}x${window.innerHeight}`, 'info');
+        });
+    </script>
+</body>
+</html>

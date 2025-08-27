@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Partner;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use App\Helpers\HostingStorageHelper;
 
 class PartnerController extends Controller
 {
@@ -33,14 +32,8 @@ class PartnerController extends Controller
         ]);
 
         if ($request->hasFile('logo')) {
-            $logo = $request->file('logo');
-            $logoPath = HostingStorageHelper::uploadFile($logo, 'partners');
-            
-            if (!$logoPath) {
-                return redirect()->back()->with('error', 'Gagal mengupload logo partner. Silakan coba lagi.');
-            }
-            
-            $validated['logo'] = $logoPath;
+            $path = $request->file('logo')->store('public/partners');
+            $validated['logo'] = str_replace('public/', '', $path);
         }
 
         Partner::create($validated);
@@ -69,25 +62,10 @@ class PartnerController extends Controller
         if ($request->hasFile('logo')) {
             // Delete old logo
             if ($partner->logo) {
-                Storage::disk('public')->delete($partner->logo);
-                // Also delete from hosting paths
-                if (HostingStorageHelper::isHostingEnvironment()) {
-                    $paths = HostingStorageHelper::getHostingPaths();
-                    $hostingFile = $paths['public_storage'] . '/' . $partner->logo;
-                    if (file_exists($hostingFile)) {
-                        @unlink($hostingFile);
-                    }
-                }
+                Storage::delete('public/' . $partner->logo);
             }
-            
-            $logo = $request->file('logo');
-            $logoPath = HostingStorageHelper::uploadFile($logo, 'partners');
-            
-            if (!$logoPath) {
-                return redirect()->back()->with('error', 'Gagal mengupload logo partner. Silakan coba lagi.');
-            }
-            
-            $validated['logo'] = $logoPath;
+            $path = $request->file('logo')->store('public/partners');
+            $validated['logo'] = str_replace('public/', '', $path);
         }
 
         $partner->update($validated);
@@ -100,15 +78,7 @@ class PartnerController extends Controller
     public function destroy(Partner $partner)
     {
         if ($partner->logo) {
-            Storage::disk('public')->delete($partner->logo);
-            // Also delete from hosting paths
-            if (HostingStorageHelper::isHostingEnvironment()) {
-                $paths = HostingStorageHelper::getHostingPaths();
-                $hostingFile = $paths['public_storage'] . '/' . $partner->logo;
-                if (file_exists($hostingFile)) {
-                    @unlink($hostingFile);
-                }
-            }
+            Storage::delete('public/' . $partner->logo);
         }
         
         $partner->delete();

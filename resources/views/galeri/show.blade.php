@@ -50,7 +50,7 @@
                 @foreach($galeri->foto as $foto)
                     <div class="group relative aspect-square overflow-hidden rounded-lg cursor-pointer bg-white shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
                          onclick="openPhotoModal({{ $loop->index }})">
-                        <img src="{{ $foto->foto_url }}" 
+                        <img src="{{ asset('uploads/galeri/' . $foto->foto) }}" 
                              alt="Foto {{ $loop->iteration }}"
                              class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                              loading="lazy">
@@ -146,12 +146,7 @@
 
 @push('scripts')
 <script>
-    const photos = @json($galeri->foto->map(function($foto) { 
-        return [
-            'foto' => $foto->foto,
-            'foto_url' => $foto->foto_url
-        ]; 
-    }));
+    const photos = @json($galeri->foto->map(function($foto) { return $foto->foto; }));
     let currentPhotoIndex = 0;
     
     function openPhotoModal(index) {
@@ -177,7 +172,7 @@
         const modalPhoto = document.getElementById('modalPhoto');
         const photoCounter = document.getElementById('photoCounter');
         
-        modalPhoto.src = photos[currentPhotoIndex].foto_url;
+        modalPhoto.src = `/uploads/galeri/${photos[currentPhotoIndex]}`;
         modalPhoto.alt = `Foto ${currentPhotoIndex + 1}`;
         photoCounter.textContent = `${currentPhotoIndex + 1} dari ${photos.length}`;
     }
@@ -194,7 +189,7 @@
     
     function downloadPhoto() {
         const link = document.createElement('a');
-        link.href = photos[currentPhotoIndex].foto_url;
+        link.href = `/uploads/galeri/${photos[currentPhotoIndex]}`;
         link.download = `foto_${currentPhotoIndex + 1}.jpg`;
         link.click();
     }

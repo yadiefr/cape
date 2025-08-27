@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\HeroBanner;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use App\Helpers\HostingStorageHelper;
 
 class HeroBannerController extends Controller
 {
@@ -36,13 +35,7 @@ class HeroBannerController extends Controller
 
         // Handle main image upload
         if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $imagePath = HostingStorageHelper::uploadFile($image, 'hero-banners');
-            
-            if (!$imagePath) {
-                return redirect()->back()->with('error', 'Gagal mengupload gambar hero banner. Silakan coba lagi.');
-            }
-            
+            $imagePath = $request->file('image')->store('hero-banners', 'public');
             $data['image'] = $imagePath;
         }
 
@@ -76,26 +69,14 @@ class HeroBannerController extends Controller
         // Handle image upload
         if ($request->hasFile('image')) {
             // Delete old image
-            if ($hero->image) {
-                Storage::disk('public')->delete($hero->image);
-                // Also delete from hosting paths
-                if (HostingStorageHelper::isHostingEnvironment()) {
-                    $paths = HostingStorageHelper::getHostingPaths();
-                    $hostingFile = $paths['public_storage'] . '/' . $hero->image;
-                    if (file_exists($hostingFile)) {
-                        @unlink($hostingFile);
-                    }
-                }
+            if ($hero->image && file_exists(public_path('images/hero/' . $hero->image))) {
+                unlink(public_path('images/hero/' . $hero->image));
             }
-            
+
             $image = $request->file('image');
-            $imagePath = HostingStorageHelper::uploadFile($image, 'hero-banners');
-            
-            if (!$imagePath) {
-                return redirect()->back()->with('error', 'Gagal mengupload gambar hero banner. Silakan coba lagi.');
-            }
-            
-            $data['image'] = $imagePath;
+            $filename = time() . '_' . uniqid() . '.' . $image->getClientOriginalExtension();
+            $image->move(public_path('images/hero'), $filename);
+            $data['image'] = $filename;
         }
 
         $hero->update($data);
@@ -107,14 +88,6 @@ class HeroBannerController extends Controller
     {
         if ($hero->image) {
             Storage::disk('public')->delete($hero->image);
-            // Also delete from hosting paths
-            if (HostingStorageHelper::isHostingEnvironment()) {
-                $paths = HostingStorageHelper::getHostingPaths();
-                $hostingFile = $paths['public_storage'] . '/' . $hero->image;
-                if (file_exists($hostingFile)) {
-                    @unlink($hostingFile);
-                }
-            }
         }
         
         $hero->delete();

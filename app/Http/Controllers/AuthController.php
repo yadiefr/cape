@@ -7,8 +7,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Storage;
-use App\Helpers\HostingStorageHelper;
 
 class AuthController extends Controller
 {    /**
@@ -182,27 +180,17 @@ class AuthController extends Controller
         $user->address = $request->address;
 
         if ($request->hasFile('photo')) {
-            // Hapus foto lama jika ada
-            if ($user->photo) {
-                Storage::disk('public')->delete('profiles/' . $user->photo);
-                // Also delete from hosting paths
-                if (HostingStorageHelper::isHostingEnvironment()) {
-                    $paths = HostingStorageHelper::getHostingPaths();
-                    $hostingFile = $paths['public_storage'] . '/profiles/' . $user->photo;
-                    if (file_exists($hostingFile)) {
-                        @unlink($hostingFile);
-                    }
-                }
-            }
-            
+            // Handle file upload
             $file = $request->file('photo');
-            $photoPath = HostingStorageHelper::uploadFile($file, 'profiles');
+            $fileName = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('uploads/profiles'), $fileName);
             
-            if (!$photoPath) {
-                return redirect()->back()->with('error', 'Gagal mengupload foto profil. Silakan coba lagi.');
+            // Delete old photo if exists
+            if ($user->photo && file_exists(public_path('uploads/profiles/' . $user->photo))) {
+                unlink(public_path('uploads/profiles/' . $user->photo));
             }
             
-            $user->photo = basename($photoPath);
+            $user->photo = $fileName;
         }
 
         $user->save();

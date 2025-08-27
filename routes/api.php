@@ -95,18 +95,6 @@ Route::get('/debug/tahun-kelas', function() {
 // Endpoint bel - tanpa middleware untuk memastikan akses mudah
 Route::get('/bel/check-current-time', 'App\Http\Controllers\BelApiController@checkCurrentTime');
 
-    // Debug routes untuk galeri
-    Route::get('/debug/galeri/{id}', [App\Http\Controllers\Admin\GaleriFotoController::class, 'debugGaleriFile']);
-    Route::get('/check/galeri-files', [App\Http\Controllers\Admin\GaleriFotoController::class, 'checkGaleriFiles']);
-    Route::post('/sync/galeri-legacy-files', [App\Http\Controllers\Admin\GaleriFotoController::class, 'syncLegacyFiles']);
-    Route::get('/debug/hosting-env', [App\Http\Controllers\Admin\GaleriFotoController::class, 'debugHostingEnv']);
-    Route::post('/test/galeri-upload', [App\Http\Controllers\Admin\GaleriFotoController::class, 'testGaleriUpload']);
-    Route::post('/test/galeri-upload-force', [App\Http\Controllers\Admin\GaleriFotoController::class, 'testGaleriUploadForce']);
-    Route::get('/test/hosting-environment', [App\Http\Controllers\Admin\GaleriFotoController::class, 'testHostingEnvironment']);
-    
-    // Debug routes untuk berita
-    Route::post('/test/berita-upload', [App\Http\Controllers\Admin\BeritaController::class, 'testBeritaUpload']);
-
 // API untuk mendapatkan foto-foto dalam galeri
 Route::get('/galeri/{id}/photos', function($id) {
     $galeri = \App\Models\Galeri::findOrFail($id);
@@ -120,14 +108,7 @@ Route::get('/galeri/{id}/photos', function($id) {
         return [
             'foto' => $photo->foto,
             'is_thumbnail' => $photo->is_thumbnail,
-            'foto_url' => $photo->foto_url,
-            'debug_info' => [
-                'storage_exists' => \Illuminate\Support\Facades\Storage::disk('public')->exists($photo->foto),
-                'public_storage_exists' => file_exists(public_path('storage/' . $photo->foto)),
-                'legacy_exists' => file_exists(public_path('uploads/galeri/' . $photo->foto)),
-                'is_hosting' => \App\Helpers\HostingStorageHelper::isHostingEnvironment(),
-                'environment' => app()->environment(),
-            ]
+            'foto_url' => $photo->foto_url
         ];
     });
     
@@ -148,165 +129,7 @@ Route::prefix('admin')->middleware(['web', 'auth'])->group(function () {
     Route::delete('guru/{guru}/remove-subject-assignment/{jadwal}', [App\Http\Controllers\Admin\GuruController::class, 'removeSubjectAssignment'])->name('api.guru.remove-subject-assignment');
 });
 
-// Sync galeri files dari direktori lama ke direktori hosting yang benar
-Route::post('/sync/galeri-legacy-files', function() {
-    if (!\App\Helpers\HostingStorageHelper::isHostingEnvironment()) {
-        return response()->json(['message' => 'Not in hosting environment']);
-    }
-    
-    $paths = \App\Helpers\HostingStorageHelper::getHostingPaths();
-    $photos = \App\Models\GaleriFoto::all();
-    $results = [];
-    
-    foreach ($photos as $photo) {
-        if ($photo->foto) {
-            // Cek apakah file ada di direktori lama (cape/public/uploads/galeri)
-            $legacyPath = $paths['current_laravel'] . '/public/uploads/galeri/' . $photo->foto;
-            $targetPath = $paths['public_storage'] . '/galeri/' . $photo->foto;
-            
-            if (file_exists($legacyPath)) {
-                // Pastikan direktori target ada
-                $targetDir = dirname($targetPath);
-                if (!is_dir($targetDir)) {
-                    \Illuminate\Support\Facades\File::makeDirectory($targetDir, 0755, true);
-                    @chmod($targetDir, 0755);
-                }
-                
-                // Copy file dari direktori lama ke direktori hosting yang benar
-                if (copy($legacyPath, $targetPath)) {
-                    @chmod($targetPath, 0644);
-                    $results[] = [
-                        'id' => $photo->id,
-                        'foto' => $photo->foto,
-                        'action' => 'copied',
-                        'from' => $legacyPath,
-                        'to' => $targetPath,
-                        'success' => true,
-                        'foto_url' => $photo->foto_url
-                    ];
-                } else {
-                    $results[] = [
-                        'id' => $photo->id,
-                        'foto' => $photo->foto,
-                        'action' => 'copy_failed',
-                        'from' => $legacyPath,
-                        'to' => $targetPath,
-                        'success' => false
-                    ];
-                }
-            } else {
-                $results[] = [
-                    'id' => $photo->id,
-                    'foto' => $photo->foto,
-                    'action' => 'not_found_in_legacy',
-                    'legacy_path' => $legacyPath,
-                    'success' => false
-                ];
-            }
-        }
-    }
-    
-    return response()->json([
-        'total_files' => count($results),
-        'successful' => count(array_filter($results, fn($r) => $r['success'])),
-        'results' => $results
-    ]);
-});
-
-// Check galeri file status
-Route::get('/check/galeri-files', function() {
-    $photos = \App\Models\GaleriFoto::all();
-    $results = [];
-    
-    if (\App\Helpers\HostingStorageHelper::isHostingEnvironment()) {
-        $paths = \App\Helpers\HostingStorageHelper::getHostingPaths();
-        
-        foreach ($photos as $photo) {
-            if ($photo->foto) {
-                $results[] = [
-                    'id' => $photo->id,
-                    'foto' => $photo->foto,
-                    'foto_url' => $photo->foto_url,
-                    'paths' => [
-                        'laravel_storage' => $paths['current_storage'] . '/' . $photo->foto,
-                        'public_storage' => $paths['public_storage'] . '/galeri/' . $photo->foto,
-                        'legacy_laravel' => $paths['current_laravel'] . '/public/uploads/galeri/' . $photo->foto,
-                        'legacy_public' => $paths['public_html'] . '/uploads/galeri/' . $photo->foto,
-                    ],
-                    'file_exists' => [
-                        'laravel_storage' => file_exists($paths['current_storage'] . '/' . $photo->foto),
-                        'public_storage' => file_exists($paths['public_storage'] . '/galeri/' . $photo->foto),
-                        'legacy_laravel' => file_exists($paths['current_laravel'] . '/public/uploads/galeri/' . $photo->foto),
-                        'legacy_public' => file_exists($paths['public_html'] . '/uploads/galeri/' . $photo->foto),
-                    ]
-                ];
-            }
-        }
-    } else {
-        foreach ($photos as $photo) {
-            if ($photo->foto) {
-                $results[] = [
-                    'id' => $photo->id,
-                    'foto' => $photo->foto,
-                    'foto_url' => $photo->foto_url,
-                    'paths' => [
-                        'storage' => storage_path('app/public/' . $photo->foto),
-                        'public_storage' => public_path('storage/' . $photo->foto),
-                        'legacy' => public_path('uploads/galeri/' . $photo->foto),
-                    ],
-                    'file_exists' => [
-                        'storage' => file_exists(storage_path('app/public/' . $photo->foto)),
-                        'public_storage' => file_exists(public_path('storage/' . $photo->foto)),
-                        'legacy' => file_exists(public_path('uploads/galeri/' . $photo->foto)),
-                    ]
-                ];
-            }
-        }
-    }
-    
-    return response()->json([
-        'is_hosting' => \App\Helpers\HostingStorageHelper::isHostingEnvironment(),
-        'total_files' => count($results),
-        'files' => $results
-    ]);
-});
-
-// Test upload galeri untuk debugging
-Route::post('/test/galeri-upload', function(\Illuminate\Http\Request $request) {
-    $request->validate([
-        'test_file' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
-    ]);
-    
-    $file = $request->file('test_file');
-    $result = \App\Helpers\HostingStorageHelper::uploadFile($file, 'galeri');
-    
-    return response()->json([
-        'success' => $result !== null,
-        'path' => $result,
-        'hosting_status' => \App\Helpers\HostingStorageHelper::getHostingStatus(),
-        'file_url' => $result ? \App\Models\GaleriFoto::where('foto', $result)->first()->foto_url ?? null : null,
-    ]);
-});
-
-// Debug hosting environment
-Route::get('/debug/hosting-env', function() {
-    return response()->json([
-        'is_hosting' => \App\Helpers\HostingStorageHelper::isHostingEnvironment(),
-        'base_path' => base_path(),
-        'paths' => \App\Helpers\HostingStorageHelper::getHostingPaths(),
-        'server_vars' => [
-            'HTTP_HOST' => request()->getHost(),
-            'SERVER_NAME' => $_SERVER['SERVER_NAME'] ?? 'unknown',
-            'DOCUMENT_ROOT' => $_SERVER['DOCUMENT_ROOT'] ?? 'unknown',
-        ],
-        'directory_checks' => [
-            'base_path_is_dir' => is_dir(base_path()),
-            'public_path_is_dir' => is_dir(public_path()),
-            'storage_path_is_dir' => is_dir(storage_path()),
-            'has_project_laravel' => is_dir(base_path('../project_laravel')),
-            'has_public_html' => is_dir(base_path('../public_html')),
-            'path_contains_project_laravel' => strpos(base_path(), 'project_laravel') !== false,
-            'path_starts_with_home' => strpos(base_path(), '/home/') === 0,
-        ]
-    ]);
+// Test route untuk debugging
+Route::get('test-bel', function() {
+    return response()->json(['message' => 'API Test berhasil!', 'timestamp' => now()]);
 });

@@ -102,6 +102,7 @@ Route::get('/bel/check-current-time', 'App\Http\Controllers\BelApiController@che
     Route::get('/debug/hosting-env', [App\Http\Controllers\Admin\GaleriFotoController::class, 'debugHostingEnv']);
     Route::post('/test/galeri-upload', [App\Http\Controllers\Admin\GaleriFotoController::class, 'testGaleriUpload']);
     Route::post('/test/galeri-upload-force', [App\Http\Controllers\Admin\GaleriFotoController::class, 'testGaleriUploadForce']);
+    Route::get('/test/hosting-environment', [App\Http\Controllers\Admin\GaleriFotoController::class, 'testHostingEnvironment']);
     
     // Debug routes untuk berita
     Route::post('/test/berita-upload', [App\Http\Controllers\Admin\BeritaController::class, 'testBeritaUpload']);

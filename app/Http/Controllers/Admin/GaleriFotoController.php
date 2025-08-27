@@ -287,4 +287,30 @@ class GaleriFotoController extends Controller
             'expected_url' => $result ? asset('uploads/' . $result) : null
         ]);
     }
+
+    // DEBUG: Direct test hosting environment
+    public function testHostingEnvironment()
+    {
+        $isHosting = HostingStorageHelper::isHostingEnvironment();
+        $paths = HostingStorageHelper::getHostingPaths();
+        $requestHost = request()->getHost();
+        $basePath = base_path();
+
+        return response()->json([
+            'request_host' => $requestHost,
+            'base_path' => $basePath,
+            'is_hosting' => $isHosting,
+            'paths' => $paths,
+            'directory_checks' => [
+                'public_html_exists' => is_dir($paths['public_html'] ?? '/not-set'),
+                'public_uploads_exists' => is_dir($paths['public_uploads'] ?? '/not-set'),
+                'current_uploads_exists' => is_dir($paths['current_uploads'] ?? '/not-set'),
+            ],
+            'force_domains' => [
+                'smkpgricikampek.my.id',
+                'smkpgricikampek.com',
+                'localhost',
+            ]
+        ]);
+    }
 }

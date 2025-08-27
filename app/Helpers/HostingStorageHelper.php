@@ -13,6 +13,19 @@ class HostingStorageHelper
      */
     public static function isHostingEnvironment(): bool
     {
+        // FORCE HOSTING MODE untuk domain tertentu
+        $requestHost = request()->getHost();
+        $forceHostingDomains = [
+            'smkpgricikampek.my.id',
+            'smkpgricikampek.com',
+            'localhost', // untuk testing
+        ];
+
+        if (in_array($requestHost, $forceHostingDomains)) {
+            Log::info("FORCED HOSTING MODE for domain: " . $requestHost);
+            return true;
+        }
+
         // Cek struktur direktori hosting yang umum
         $indicators = [
             // Path mengandung 'project_laravel'
@@ -30,7 +43,7 @@ class HostingStorageHelper
         // Log detailed information
         Log::info("Environment Detection Details:");
         Log::info("- Base path: " . base_path());
-        Log::info("- Request host: " . request()->getHost());
+        Log::info("- Request host: " . $requestHost);
         Log::info("- Contains 'project_laravel': " . (strpos(base_path(), 'project_laravel') !== false ? 'YES' : 'NO'));
         Log::info("- Has ../project_laravel dir: " . (is_dir(base_path('../project_laravel')) ? 'YES' : 'NO'));
         Log::info("- Has ../public_html dir: " . (is_dir(base_path('../public_html')) ? 'YES' : 'NO'));
@@ -107,7 +120,7 @@ class HostingStorageHelper
             Log::info("- User dir: " . $userDir);
             Log::info("- Project name: " . $projectName);
 
-            return [
+            $paths = [
                 'current_laravel' => $basePath,
                 'laravel_project' => $userDir . '/project_laravel',
                 'public_html' => $userDir . '/public_html',
@@ -118,6 +131,9 @@ class HostingStorageHelper
                 'public_uploads' => $userDir . '/public_html/uploads',
                 'current_uploads' => $basePath . '/public/uploads',
             ];
+
+            Log::info("Final hosting paths: " . json_encode($paths));
+            return $paths;
         } else {
             Log::info("Using localhost fallback paths");
             // Fallback untuk localhost atau struktur lain
@@ -133,9 +149,7 @@ class HostingStorageHelper
                 'current_uploads' => $basePath . '/public/uploads',
             ];
         }
-    }    /**
-     * Ensure directory structure exists untuk hosting
-     */
+    }
     public static function ensureHostingDirectories(): array
     {
         $results = [];

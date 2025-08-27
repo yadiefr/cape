@@ -1,10 +1,13 @@
 .git
 .env
-.env-production
+.env.example
+.env.local
 node_modules
 backup/
 storage/framework/cache/
 storage/framework/sessions/
 storage/framework/views/
 storage/logs/
-bootstrap/cache/
+bootstrap/cache/config.php
+bootstrap/cache/routes.php
+bootstrap/cache/routes-v7.php

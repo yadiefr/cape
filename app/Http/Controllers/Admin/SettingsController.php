@@ -209,18 +209,25 @@ class SettingsController extends Controller
                     $path = $file->storeAs('settings', $filename, 'public');
                     \Log::info("File stored at: {$path}");
                     
-                    // Also copy to public/storage for direct access (Windows compatibility)
+                    // Always copy to public/storage for hosting compatibility
                     $publicStoragePath = public_path('storage/settings');
                     if (!file_exists($publicStoragePath)) {
                         mkdir($publicStoragePath, 0755, true);
+                        chmod($publicStoragePath, 0755);
                     }
                     
                     $sourceFile = storage_path('app/public/' . $path);
                     $destFile = public_path('storage/' . $path);
                     
                     if (file_exists($sourceFile)) {
-                        copy($sourceFile, $destFile);
-                        \Log::info("File copied to public storage: {$destFile}");
+                        if (copy($sourceFile, $destFile)) {
+                            chmod($destFile, 0644);
+                            \Log::info("File copied to public storage: {$destFile}");
+                        } else {
+                            \Log::error("Failed to copy file to public storage: {$destFile}");
+                        }
+                    } else {
+                        \Log::error("Source file not found: {$sourceFile}");
                     }
                     
                     // Delete old file if exists

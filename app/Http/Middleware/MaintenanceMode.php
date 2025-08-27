@@ -5,7 +5,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use App\Models\Setting;
+use App\Models\Settings;
 
 class MaintenanceMode
 {
@@ -20,7 +20,7 @@ class MaintenanceMode
     {
         // Cek status maintenance dari database
         try {
-            $maintenanceMode = Setting::where('key', 'maintenance_mode')->first();
+            $maintenanceMode = Settings::where('key', 'maintenance_mode')->first();
             $isMaintenanceEnabled = $maintenanceMode && ($maintenanceMode->value === '1' || $maintenanceMode->value === 1 || $maintenanceMode->value === true);
             
             // Jika maintenance mode tidak aktif, lanjutkan request

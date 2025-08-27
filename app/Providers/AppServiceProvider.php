@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\View;
 use App\Models\Settings;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use App\Models\SettingsJadwal;
+use App\Observers\SettingsObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -49,6 +50,9 @@ class AppServiceProvider extends ServiceProvider
         }
 
         Schema::defaultStringLength(191);
+        
+        // Register Settings Observer for automatic cache clearing
+        Settings::observe(SettingsObserver::class);
         
         Relation::morphMap([
             'admin' => 'App\Models\Admin',

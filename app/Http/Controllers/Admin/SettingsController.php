@@ -7,6 +7,7 @@ use App\Models\Settings;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Cache;
 
 class SettingsController extends Controller
 {
@@ -123,6 +124,9 @@ class SettingsController extends Controller
                         $settingModel->type = $settingData['type'] ?? 'string';
                         $settingModel->save();
                         
+                        // Clear cache for this specific setting
+                        Cache::forget("setting_{$settingData['key']}");
+                        
                         \Log::info("Updated regular setting: {$settingData['key']} with value: {$settingData['value']}");
                     }
                 }
@@ -130,6 +134,9 @@ class SettingsController extends Controller
             
             // Handle file uploads
             $uploadedFiles = $this->handleFileUploads($request);
+            
+            // Clear settings cache after all updates
+            $this->clearSettingsCache();
             
             \Log::info("Settings update completed with " . count($uploadedFiles) . " file uploads");
             
@@ -262,6 +269,9 @@ class SettingsController extends Controller
                         \Log::info("Created new setting {$key} with file path: {$path}");
                     }
                     
+                    // Clear cache for this specific setting
+                    Cache::forget("setting_{$key}");
+                    
                     $uploadedFiles[] = [
                         'key' => $key,
                         'path' => $path,
@@ -277,5 +287,35 @@ class SettingsController extends Controller
         }
         
         return $uploadedFiles;
+    }
+    
+    /**
+     * Clear all settings cache
+     */
+    private function clearSettingsCache()
+    {
+        try {
+            // Clear specific settings cache used by helper function
+            $settingKeys = Settings::pluck('key');
+            foreach ($settingKeys as $key) {
+                Cache::forget("setting_{$key}");
+            }
+            
+            // Clear grouped cache
+            Cache::forget('all_settings');
+            
+            $groups = Settings::distinct()->pluck('group');
+            foreach ($groups as $group) {
+                Cache::forget("settings_group_{$group}");
+            }
+            
+            // Also clear any other cache that might be related
+            Cache::forget('settings');
+            Cache::forget('site_settings');
+            
+            \Log::info("Settings cache cleared successfully");
+        } catch (\Exception $e) {
+            \Log::error("Error clearing settings cache: " . $e->getMessage());
+        }
     }
 }

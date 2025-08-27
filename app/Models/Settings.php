@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Cache;
 
 class Settings extends Model
 {
@@ -52,7 +53,7 @@ class Settings extends Model
             $value = json_encode($value);
         }
 
-        return self::updateOrCreate(
+        $setting = self::updateOrCreate(
             ['key' => $key],
             [
                 'value' => $value,
@@ -61,5 +62,43 @@ class Settings extends Model
                 'description' => $description
             ]
         );
+
+        // Clear cache after setting value
+        self::clearCacheForKey($key);
+        
+        return $setting;
+    }
+    
+    /**
+     * Clear cache for specific setting key
+     */
+    public static function clearCacheForKey(string $key): void
+    {
+        Cache::forget("setting_{$key}");
+        Cache::forget('all_settings');
+        
+        // Clear group cache
+        $setting = self::where('key', $key)->first();
+        if ($setting && $setting->group) {
+            Cache::forget("settings_group_{$setting->group}");
+        }
+    }
+    
+    /**
+     * Clear all settings cache
+     */
+    public static function clearAllCache(): void
+    {
+        $keys = self::pluck('key');
+        foreach ($keys as $key) {
+            Cache::forget("setting_{$key}");
+        }
+        
+        Cache::forget('all_settings');
+        
+        $groups = self::distinct()->pluck('group');
+        foreach ($groups as $group) {
+            Cache::forget("settings_group_{$group}");
+        }
     }
 }

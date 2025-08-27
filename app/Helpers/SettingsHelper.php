@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Setting;
+use App\Models\Settings;
 use Illuminate\Support\Facades\Cache;
 
 if (!function_exists('setting')) {
@@ -14,7 +14,7 @@ if (!function_exists('setting')) {
     function setting($key, $default = null)
     {
         return Cache::remember("setting_{$key}", 3600, function () use ($key, $default) {
-            $setting = Setting::where('key', $key)->first();
+            $setting = Settings::where('key', $key)->first();
             return $setting ? $setting->value : $default;
         });
     }
@@ -29,7 +29,7 @@ if (!function_exists('settings')) {
     function settings()
     {
         return Cache::remember('all_settings', 3600, function () {
-            return Setting::pluck('value', 'key')->toArray();
+            return Settings::pluck('value', 'key')->toArray();
         });
     }
 }
@@ -44,7 +44,7 @@ if (!function_exists('setting_group')) {
     function setting_group($group)
     {
         return Cache::remember("settings_group_{$group}", 3600, function () use ($group) {
-            return Setting::where('group', $group)->pluck('value', 'key')->toArray();
+            return Settings::where('group', $group)->pluck('value', 'key')->toArray();
         });
     }
 }
@@ -57,16 +57,39 @@ if (!function_exists('clear_settings_cache')) {
      */
     function clear_settings_cache()
     {
-        $keys = Setting::pluck('key');
+        $keys = Settings::pluck('key');
         foreach ($keys as $key) {
             Cache::forget("setting_{$key}");
         }
         Cache::forget('all_settings');
         
-        $groups = Setting::distinct()->pluck('group');
+        $groups = Settings::distinct()->pluck('group');
         foreach ($groups as $group) {
             Cache::forget("settings_group_{$group}");
         }
+    }
+}
+
+if (!function_exists('setting_with_cache_bust')) {
+    /**
+     * Get setting value with cache busting for images
+     *
+     * @param string $key
+     * @param mixed $default
+     * @param bool $asset_url If true, will prepend asset('storage/') and add cache bust
+     * @return mixed
+     */
+    function setting_with_cache_bust($key, $default = null, $asset_url = false)
+    {
+        $value = setting($key, $default);
+        
+        if ($asset_url && $value) {
+            $full_path = storage_path('app/public/' . $value);
+            $cache_bust = file_exists($full_path) ? '?v=' . filemtime($full_path) : '';
+            return asset('storage/' . $value) . $cache_bust;
+        }
+        
+        return $value;
     }
 }
 

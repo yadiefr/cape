@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use App\Helpers\HostingStorageHelper;
 
 class AdminUserController extends Controller
 {
@@ -67,9 +68,14 @@ class AdminUserController extends Controller
         // Handle photo upload
         if ($request->hasFile('photo')) {
             $photo = $request->file('photo');
-            $filename = time() . '_' . $photo->getClientOriginalName();
-            $photo->storeAs('admin_photos', $filename, 'public');
-            $data['photo'] = $filename;
+            $photoPath = HostingStorageHelper::uploadFile($photo, 'admin_photos');
+            
+            if (!$photoPath) {
+                return redirect()->back()->with('error', 'Gagal mengupload foto admin. Silakan coba lagi.');
+            }
+            
+            // Extract filename from path for consistency with existing logic
+            $data['photo'] = basename($photoPath);
         }
 
         AdminUser::create($data);
@@ -117,12 +123,25 @@ class AdminUserController extends Controller
             // Delete old photo
             if ($adminUser->photo) {
                 Storage::disk('public')->delete('admin_photos/' . $adminUser->photo);
+                // Also delete from hosting paths
+                if (HostingStorageHelper::isHostingEnvironment()) {
+                    $paths = HostingStorageHelper::getHostingPaths();
+                    $hostingFile = $paths['public_storage'] . '/admin_photos/' . $adminUser->photo;
+                    if (file_exists($hostingFile)) {
+                        @unlink($hostingFile);
+                    }
+                }
             }
             
             $photo = $request->file('photo');
-            $filename = time() . '_' . $photo->getClientOriginalName();
-            $photo->storeAs('admin_photos', $filename, 'public');
-            $data['photo'] = $filename;
+            $photoPath = HostingStorageHelper::uploadFile($photo, 'admin_photos');
+            
+            if (!$photoPath) {
+                return redirect()->back()->with('error', 'Gagal mengupload foto admin. Silakan coba lagi.');
+            }
+            
+            // Extract filename from path for consistency with existing logic
+            $data['photo'] = basename($photoPath);
         }
 
         $adminUser->update($data);
@@ -141,6 +160,14 @@ class AdminUserController extends Controller
         // Delete photo if exists
         if ($adminUser->photo) {
             Storage::disk('public')->delete('admin_photos/' . $adminUser->photo);
+            // Also delete from hosting paths
+            if (HostingStorageHelper::isHostingEnvironment()) {
+                $paths = HostingStorageHelper::getHostingPaths();
+                $hostingFile = $paths['public_storage'] . '/admin_photos/' . $adminUser->photo;
+                if (file_exists($hostingFile)) {
+                    @unlink($hostingFile);
+                }
+            }
         }
 
         $adminUser->delete();

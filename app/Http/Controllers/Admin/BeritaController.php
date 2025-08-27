@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Berita;
 use Illuminate\Support\Facades\Storage;
+use App\Helpers\HostingStorageHelper;
 
 class BeritaController extends Controller
 {
@@ -33,12 +34,26 @@ class BeritaController extends Controller
         
         // Handle foto upload
         if ($request->hasFile('foto')) {
-            $data['foto'] = $request->file('foto')->store('berita_foto', 'public');
+            $foto = $request->file('foto');
+            $fotoPath = HostingStorageHelper::uploadFile($foto, 'berita_foto');
+            
+            if (!$fotoPath) {
+                return redirect()->back()->with('error', 'Gagal mengupload foto berita. Silakan coba lagi.');
+            }
+            
+            $data['foto'] = $fotoPath;
         }
         
         // Handle lampiran upload
         if ($request->hasFile('lampiran')) {
-            $data['lampiran'] = $request->file('lampiran')->store('lampiran_berita', 'public');
+            $lampiran = $request->file('lampiran');
+            $lampiranPath = HostingStorageHelper::uploadFile($lampiran, 'lampiran_berita');
+            
+            if (!$lampiranPath) {
+                return redirect()->back()->with('error', 'Gagal mengupload lampiran berita. Silakan coba lagi.');
+            }
+            
+            $data['lampiran'] = $lampiranPath;
         }
         
         Berita::create($data);
@@ -66,21 +81,51 @@ class BeritaController extends Controller
         // Handle foto upload
         if ($request->hasFile('foto')) {
             // Hapus foto lama jika ada
-            if ($berita->foto && Storage::disk('public')->exists($berita->foto)) {
+            if ($berita->foto) {
                 Storage::disk('public')->delete($berita->foto);
+                // Also delete from hosting paths
+                if (HostingStorageHelper::isHostingEnvironment()) {
+                    $paths = HostingStorageHelper::getHostingPaths();
+                    $hostingFile = $paths['public_storage'] . '/' . $berita->foto;
+                    if (file_exists($hostingFile)) {
+                        @unlink($hostingFile);
+                    }
+                }
             }
-            // Upload foto baru
-            $data['foto'] = $request->file('foto')->store('berita_foto', 'public');
+            
+            $foto = $request->file('foto');
+            $fotoPath = HostingStorageHelper::uploadFile($foto, 'berita_foto');
+            
+            if (!$fotoPath) {
+                return redirect()->back()->with('error', 'Gagal mengupload foto berita. Silakan coba lagi.');
+            }
+            
+            $data['foto'] = $fotoPath;
         }
         
         // Handle lampiran upload
         if ($request->hasFile('lampiran')) {
             // Hapus file lama jika ada
-            if ($berita->lampiran && Storage::disk('public')->exists($berita->lampiran)) {
+            if ($berita->lampiran) {
                 Storage::disk('public')->delete($berita->lampiran);
+                // Also delete from hosting paths
+                if (HostingStorageHelper::isHostingEnvironment()) {
+                    $paths = HostingStorageHelper::getHostingPaths();
+                    $hostingFile = $paths['public_storage'] . '/' . $berita->lampiran;
+                    if (file_exists($hostingFile)) {
+                        @unlink($hostingFile);
+                    }
+                }
             }
-            // Upload file baru
-            $data['lampiran'] = $request->file('lampiran')->store('lampiran_berita', 'public');
+            
+            $lampiran = $request->file('lampiran');
+            $lampiranPath = HostingStorageHelper::uploadFile($lampiran, 'lampiran_berita');
+            
+            if (!$lampiranPath) {
+                return redirect()->back()->with('error', 'Gagal mengupload lampiran berita. Silakan coba lagi.');
+            }
+            
+            $data['lampiran'] = $lampiranPath;
         }
         
         $berita->update($data);
@@ -92,13 +137,29 @@ class BeritaController extends Controller
         $berita = Berita::findOrFail($id);
         
         // Hapus foto jika ada
-        if ($berita->foto && Storage::disk('public')->exists($berita->foto)) {
+        if ($berita->foto) {
             Storage::disk('public')->delete($berita->foto);
+            // Also delete from hosting paths
+            if (HostingStorageHelper::isHostingEnvironment()) {
+                $paths = HostingStorageHelper::getHostingPaths();
+                $hostingFile = $paths['public_storage'] . '/' . $berita->foto;
+                if (file_exists($hostingFile)) {
+                    @unlink($hostingFile);
+                }
+            }
         }
         
         // Hapus file lampiran jika ada
-        if ($berita->lampiran && Storage::disk('public')->exists($berita->lampiran)) {
+        if ($berita->lampiran) {
             Storage::disk('public')->delete($berita->lampiran);
+            // Also delete from hosting paths
+            if (HostingStorageHelper::isHostingEnvironment()) {
+                $paths = HostingStorageHelper::getHostingPaths();
+                $hostingFile = $paths['public_storage'] . '/' . $berita->lampiran;
+                if (file_exists($hostingFile)) {
+                    @unlink($hostingFile);
+                }
+            }
         }
         
         $berita->delete();

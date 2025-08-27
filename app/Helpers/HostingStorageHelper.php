@@ -99,6 +99,78 @@ class HostingStorageHelper
     }
     
     /**
+     * Universal file upload handler for hosting
+     * Menangani semua jenis upload file dengan konsisten
+     */
+    public static function uploadFile($file, $directory, $filename = null): ?string
+    {
+        if (!$file || !$file->isValid()) {
+            Log::error("Invalid file for upload to directory: $directory");
+            return null;
+        }
+        
+        try {
+            // Get file info before processing (avoid temp file issues)
+            $originalName = $file->getClientOriginalName();
+            $extension = $file->getClientOriginalExtension();
+            
+            // Generate filename jika tidak disediakan
+            if (!$filename) {
+                $timestamp = time();
+                $random = uniqid();
+                $filename = $directory . '_' . $timestamp . '_' . $random . '.' . $extension;
+            }
+            
+            $relativePath = $directory . '/' . $filename;
+            
+            if (self::isHostingEnvironment()) {
+                // Hosting environment - use enhanced upload
+                return self::handleHostingUpload($file, $directory, $filename);
+            } else {
+                // Localhost - use standard Laravel upload
+                return self::handleLocalhostUpload($file, $directory, $filename);
+            }
+            
+        } catch (\Exception $e) {
+            Log::error("Error in uploadFile for directory $directory: " . $e->getMessage());
+            return null;
+        }
+    }
+    
+    /**
+     * Handle localhost upload
+     */
+    private static function handleLocalhostUpload($file, $directory, $filename): ?string
+    {
+        try {
+            $relativePath = $directory . '/' . $filename;
+            $path = $file->storeAs($directory, $filename, 'public');
+            
+            // Copy to public/storage for localhost compatibility
+            $sourceFile = storage_path('app/public/' . $path);
+            $destFile = public_path('storage/' . $path);
+            $destDir = dirname($destFile);
+            
+            if (!is_dir($destDir)) {
+                File::makeDirectory($destDir, 0755, true);
+            }
+            
+            if (file_exists($sourceFile) && copy($sourceFile, $destFile)) {
+                @chmod($destFile, 0644);
+                Log::info("Localhost upload successful: $path");
+                return $path;
+            }
+            
+            Log::warning("Failed to copy to public storage for localhost: $destFile");
+            return $path; // Still return path even if copy failed
+            
+        } catch (\Exception $e) {
+            Log::error("Error in localhost upload: " . $e->getMessage());
+            return null;
+        }
+    }
+    
+    /**
      * Handle file upload untuk hosting environment
      */
     public static function handleHostingUpload($file, $directory = 'settings', $filename = null): ?string

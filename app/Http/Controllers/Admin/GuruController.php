@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Guru;
 use App\Imports\GuruImport;
 use App\Exports\GuruTemplateExport;
+use App\Helpers\HostingStorageHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -71,7 +72,12 @@ class GuruController extends Controller
 
         if ($request->hasFile('foto')) {
             $foto = $request->file('foto');
-            $fotoPath = $foto->store('guru', 'public');
+            $fotoPath = HostingStorageHelper::uploadFile($foto, 'guru');
+            
+            if (!$fotoPath) {
+                return redirect()->back()->with('error', 'Gagal mengupload foto guru. Silakan coba lagi.');
+            }
+            
             $data['foto'] = $fotoPath;
         }
 
@@ -154,10 +160,23 @@ class GuruController extends Controller
             // Hapus foto lama jika ada
             if ($guru->foto) {
                 Storage::disk('public')->delete($guru->foto);
+                // Also delete from hosting paths
+                if (HostingStorageHelper::isHostingEnvironment()) {
+                    $paths = HostingStorageHelper::getHostingPaths();
+                    $hostingFile = $paths['public_storage'] . '/' . $guru->foto;
+                    if (file_exists($hostingFile)) {
+                        @unlink($hostingFile);
+                    }
+                }
             }
             
             $foto = $request->file('foto');
-            $fotoPath = $foto->store('guru', 'public');
+            $fotoPath = HostingStorageHelper::uploadFile($foto, 'guru');
+            
+            if (!$fotoPath) {
+                return redirect()->back()->with('error', 'Gagal mengupload foto guru. Silakan coba lagi.');
+            }
+            
             $data['foto'] = $fotoPath;
         }
 

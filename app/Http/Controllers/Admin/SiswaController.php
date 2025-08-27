@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Siswa;
 use App\Models\Kelas;
 use App\Models\Jurusan;
+use App\Helpers\HostingStorageHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
@@ -149,7 +150,11 @@ class SiswaController extends Controller
             // Upload foto jika ada
             $fotoPath = null;
             if ($request->hasFile('foto')) {
-                $fotoPath = $request->file('foto')->store('siswa', 'public');
+                $fotoPath = HostingStorageHelper::uploadFile($request->file('foto'), 'siswa');
+                
+                if (!$fotoPath) {
+                    throw new \Exception('Gagal mengupload foto siswa. Silakan coba lagi.');
+                }
             }
 
             // Handle password - selalu gunakan tanggal lahir jika tersedia
@@ -350,8 +355,21 @@ class SiswaController extends Controller
                 // Hapus foto lama jika ada
                 if ($fotoPath && Storage::disk('public')->exists($fotoPath)) {
                     Storage::disk('public')->delete($fotoPath);
+                    // Also delete from hosting paths
+                    if (HostingStorageHelper::isHostingEnvironment()) {
+                        $paths = HostingStorageHelper::getHostingPaths();
+                        $hostingFile = $paths['public_storage'] . '/' . $fotoPath;
+                        if (file_exists($hostingFile)) {
+                            @unlink($hostingFile);
+                        }
+                    }
                 }
-                $fotoPath = $request->file('foto')->store('siswa', 'public');
+                
+                $fotoPath = HostingStorageHelper::uploadFile($request->file('foto'), 'siswa');
+                
+                if (!$fotoPath) {
+                    throw new \Exception('Gagal mengupload foto siswa. Silakan coba lagi.');
+                }
             }
             
             // Handle password reset if checkbox is checked

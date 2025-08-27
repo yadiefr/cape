@@ -86,9 +86,14 @@ class BeritaController extends Controller
                 // Also delete from hosting paths
                 if (HostingStorageHelper::isHostingEnvironment()) {
                     $paths = HostingStorageHelper::getHostingPaths();
-                    $hostingFile = $paths['public_storage'] . '/' . $berita->foto;
+                    $hostingFile = $paths['public_uploads'] . '/' . $berita->foto;
                     if (file_exists($hostingFile)) {
                         @unlink($hostingFile);
+                    }
+                    // Also delete from current uploads
+                    $currentFile = $paths['current_uploads'] . '/' . $berita->foto;
+                    if (file_exists($currentFile)) {
+                        @unlink($currentFile);
                     }
                 }
             }
@@ -111,9 +116,14 @@ class BeritaController extends Controller
                 // Also delete from hosting paths
                 if (HostingStorageHelper::isHostingEnvironment()) {
                     $paths = HostingStorageHelper::getHostingPaths();
-                    $hostingFile = $paths['public_storage'] . '/' . $berita->lampiran;
+                    $hostingFile = $paths['public_uploads'] . '/' . $berita->lampiran;
                     if (file_exists($hostingFile)) {
                         @unlink($hostingFile);
+                    }
+                    // Also delete from current uploads
+                    $currentFile = $paths['current_uploads'] . '/' . $berita->lampiran;
+                    if (file_exists($currentFile)) {
+                        @unlink($currentFile);
                     }
                 }
             }
@@ -142,9 +152,14 @@ class BeritaController extends Controller
             // Also delete from hosting paths
             if (HostingStorageHelper::isHostingEnvironment()) {
                 $paths = HostingStorageHelper::getHostingPaths();
-                $hostingFile = $paths['public_storage'] . '/' . $berita->foto;
+                $hostingFile = $paths['public_uploads'] . '/' . $berita->foto;
                 if (file_exists($hostingFile)) {
                     @unlink($hostingFile);
+                }
+                // Also delete from current uploads
+                $currentFile = $paths['current_uploads'] . '/' . $berita->foto;
+                if (file_exists($currentFile)) {
+                    @unlink($currentFile);
                 }
             }
         }
@@ -155,9 +170,14 @@ class BeritaController extends Controller
             // Also delete from hosting paths
             if (HostingStorageHelper::isHostingEnvironment()) {
                 $paths = HostingStorageHelper::getHostingPaths();
-                $hostingFile = $paths['public_storage'] . '/' . $berita->lampiran;
+                $hostingFile = $paths['public_uploads'] . '/' . $berita->lampiran;
                 if (file_exists($hostingFile)) {
                     @unlink($hostingFile);
+                }
+                // Also delete from current uploads
+                $currentFile = $paths['current_uploads'] . '/' . $berita->lampiran;
+                if (file_exists($currentFile)) {
+                    @unlink($currentFile);
                 }
             }
         }
@@ -165,5 +185,30 @@ class BeritaController extends Controller
         $berita->delete();
         
         return redirect()->route('admin.berita.index')->with('success', 'Berita berhasil dihapus');
+    }
+
+    // DEBUG: Test berita upload
+    public function testBeritaUpload(Request $request)
+    {
+        $request->validate([
+            'test_file' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
+        ]);
+
+        $file = $request->file('test_file');
+        $result = HostingStorageHelper::uploadFile($file, 'berita_foto');
+
+        $paths = HostingStorageHelper::getHostingPaths();
+
+        return response()->json([
+            'upload_result' => $result,
+            'is_hosting' => HostingStorageHelper::isHostingEnvironment(),
+            'paths' => $paths,
+            'file_checks' => [
+                'laravel_storage' => file_exists(storage_path('app/public/' . $result)),
+                'public_uploads' => file_exists($paths['public_uploads'] . '/' . $result),
+                'current_uploads' => file_exists($paths['current_uploads'] . '/' . $result),
+            ],
+            'expected_url' => $result ? asset('uploads/' . $result) : null
+        ]);
     }
 }

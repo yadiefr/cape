@@ -129,10 +129,16 @@ class HostingStorageHelper
             
             $relativePath = $directory . '/' . $filename;
             
+            Log::info("UploadFile called - Directory: $directory, IsHosting: " . (self::isHostingEnvironment() ? 'YES' : 'NO'));
+            Log::info("Base path: " . base_path());
+            Log::info("Request host: " . request()->getHost());
+            
             if (self::isHostingEnvironment()) {
+                Log::info("Using HOSTING upload for directory: $directory");
                 // Hosting environment - use enhanced upload
                 return self::handleHostingUpload($file, $directory, $filename);
             } else {
+                Log::info("Using LOCALHOST upload for directory: $directory");
                 // Localhost - use standard Laravel upload
                 return self::handleLocalhostUpload($file, $directory, $filename);
             }

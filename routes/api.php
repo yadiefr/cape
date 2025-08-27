@@ -95,33 +95,12 @@ Route::get('/debug/tahun-kelas', function() {
 // Endpoint bel - tanpa middleware untuk memastikan akses mudah
 Route::get('/bel/check-current-time', 'App\Http\Controllers\BelApiController@checkCurrentTime');
 
-// Debug route untuk galeri
-Route::get('/debug/galeri/{id}', function($id) {
-    $galeri = \App\Models\Galeri::findOrFail($id);
-    $photos = \App\Models\GaleriFoto::where('galeri_id', $id)->get();
-    
-    $debug = [
-        'galeri' => $galeri,
-        'hosting_status' => \App\Helpers\HostingStorageHelper::getHostingStatus(),
-        'photos' => $photos->map(function($photo) {
-            return [
-                'id' => $photo->id,
-                'foto' => $photo->foto,
-                'foto_url' => $photo->foto_url,
-                'storage_path' => storage_path('app/public/' . $photo->foto),
-                'public_storage_path' => public_path('storage/' . $photo->foto),
-                'legacy_path' => public_path('uploads/galeri/' . $photo->foto),
-                'files_exist' => [
-                    'storage' => file_exists(storage_path('app/public/' . $photo->foto)),
-                    'public_storage' => file_exists(public_path('storage/' . $photo->foto)),
-                    'legacy' => file_exists(public_path('uploads/galeri/' . $photo->foto)),
-                ]
-            ];
-        })
-    ];
-    
-    return response()->json($debug);
-});
+    // Debug routes untuk galeri
+    Route::get('/debug/galeri/{id}', [App\Http\Controllers\Admin\GaleriFotoController::class, 'debugGaleriFile']);
+    Route::get('/check/galeri-files', [App\Http\Controllers\Admin\GaleriFotoController::class, 'checkGaleriFiles']);
+    Route::post('/sync/galeri-legacy-files', [App\Http\Controllers\Admin\GaleriFotoController::class, 'syncLegacyFiles']);
+    Route::get('/debug/hosting-env', [App\Http\Controllers\Admin\GaleriFotoController::class, 'debugHostingEnv']);
+    Route::post('/test/galeri-upload', [App\Http\Controllers\Admin\GaleriFotoController::class, 'testGaleriUpload']);
 
 // API untuk mendapatkan foto-foto dalam galeri
 Route::get('/galeri/{id}/photos', function($id) {
@@ -301,5 +280,28 @@ Route::post('/test/galeri-upload', function(\Illuminate\Http\Request $request) {
         'path' => $result,
         'hosting_status' => \App\Helpers\HostingStorageHelper::getHostingStatus(),
         'file_url' => $result ? \App\Models\GaleriFoto::where('foto', $result)->first()->foto_url ?? null : null,
+    ]);
+});
+
+// Debug hosting environment
+Route::get('/debug/hosting-env', function() {
+    return response()->json([
+        'is_hosting' => \App\Helpers\HostingStorageHelper::isHostingEnvironment(),
+        'base_path' => base_path(),
+        'paths' => \App\Helpers\HostingStorageHelper::getHostingPaths(),
+        'server_vars' => [
+            'HTTP_HOST' => request()->getHost(),
+            'SERVER_NAME' => $_SERVER['SERVER_NAME'] ?? 'unknown',
+            'DOCUMENT_ROOT' => $_SERVER['DOCUMENT_ROOT'] ?? 'unknown',
+        ],
+        'directory_checks' => [
+            'base_path_is_dir' => is_dir(base_path()),
+            'public_path_is_dir' => is_dir(public_path()),
+            'storage_path_is_dir' => is_dir(storage_path()),
+            'has_project_laravel' => is_dir(base_path('../project_laravel')),
+            'has_public_html' => is_dir(base_path('../public_html')),
+            'path_contains_project_laravel' => strpos(base_path(), 'project_laravel') !== false,
+            'path_starts_with_home' => strpos(base_path(), '/home/') === 0,
+        ]
     ]);
 });

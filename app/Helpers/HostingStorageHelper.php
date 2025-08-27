@@ -179,33 +179,33 @@ class HostingStorageHelper
             Log::error("Invalid file for hosting upload");
             return null;
         }
-        
+
         try {
             // Get file info before moving (avoid temp file issues)
             $originalName = $file->getClientOriginalName();
             $extension = $file->getClientOriginalExtension();
             $tempPath = $file->getPathname();
-            
+
             // Generate filename jika tidak disediakan
             if (!$filename) {
                 $filename = $directory . '_' . time() . '_' . uniqid() . '.' . $extension;
             }
-            
+
             $relativePath = $directory . '/' . $filename;
-            
+
             // Get hosting paths
             $paths = self::getHostingPaths();
             Log::info("Hosting upload - Original: $originalName, Target: $relativePath");
             Log::info("Hosting paths: " . json_encode($paths));
-            
-            // Target paths untuk hosting
-            $currentStoragePath = $paths['current_storage'] . '/' . $relativePath;
+
+            // Target paths untuk hosting - langsung ke public_html
             $publicStoragePath = $paths['public_storage'] . '/' . $relativePath;
-            
+            $currentStoragePath = $paths['current_storage'] . '/' . $relativePath;
+
             // Ensure directories exist
-            $currentDir = dirname($currentStoragePath);
             $publicDir = dirname($publicStoragePath);
-            
+            $currentDir = dirname($currentStoragePath);
+
             foreach ([$currentDir, $publicDir] as $dir) {
                 if (!is_dir($dir)) {
                     if (!File::makeDirectory($dir, 0755, true)) {
@@ -216,40 +216,35 @@ class HostingStorageHelper
                     Log::info("Created directory: $dir");
                 }
             }
-            
-            // Move uploaded file to current storage
-            if ($file->move($currentDir, $filename)) {
-                @chmod($currentStoragePath, 0644);
-                Log::info("File moved to current storage: $currentStoragePath");
-                
-                // Verify file exists before copying
-                if (file_exists($currentStoragePath)) {
-                    // Copy to public HTML storage
-                    if (copy($currentStoragePath, $publicStoragePath)) {
-                        @chmod($publicStoragePath, 0644);
-                        Log::info("File copied to public storage: $publicStoragePath");
-                        
-                        // Double check both files exist
-                        $currentExists = file_exists($currentStoragePath);
-                        $publicExists = file_exists($publicStoragePath);
-                        
-                        Log::info("Final check - Current: " . ($currentExists ? 'EXISTS' : 'NOT FOUND') . 
-                                 ", Public: " . ($publicExists ? 'EXISTS' : 'NOT FOUND'));
-                        
-                        return $relativePath;
-                    } else {
-                        Log::error("Failed to copy to public storage: $publicStoragePath");
-                        return null;
-                    }
+
+            // Move uploaded file langsung ke public_html storage (lokasi utama)
+            if ($file->move($publicDir, $filename)) {
+                @chmod($publicStoragePath, 0644);
+                Log::info("File moved to public storage: $publicStoragePath");
+
+                // Copy juga ke current storage untuk konsistensi
+                if (copy($publicStoragePath, $currentStoragePath)) {
+                    @chmod($currentStoragePath, 0644);
+                    Log::info("File copied to current storage: $currentStoragePath");
                 } else {
-                    Log::error("File not found after move: $currentStoragePath");
+                    Log::warning("Failed to copy to current storage: $currentStoragePath");
+                }
+
+                // Double check file exists
+                $publicExists = file_exists($publicStoragePath);
+                Log::info("Final check - Public storage: " . ($publicExists ? 'EXISTS' : 'NOT FOUND'));
+
+                if ($publicExists) {
+                    return $relativePath;
+                } else {
+                    Log::error("File not found after move: $publicStoragePath");
                     return null;
                 }
             } else {
-                Log::error("Failed to move file from temp to: $currentStoragePath");
+                Log::error("Failed to move file from temp to: $publicStoragePath");
                 return null;
             }
-            
+
         } catch (\Exception $e) {
             Log::error("Error in hosting upload: " . $e->getMessage());
             Log::error("Stack trace: " . $e->getTraceAsString());

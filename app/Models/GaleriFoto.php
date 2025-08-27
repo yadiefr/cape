@@ -30,19 +30,30 @@ class GaleriFoto extends Model
             return Storage::disk('public')->url($this->foto);
         }
 
-        // Untuk hosting environment, coba path alternatif
-        if (app()->environment() !== 'local') {
-            // Coba path di public_html/storage
-            $publicStoragePath = public_path('storage/' . $this->foto);
+        // Untuk hosting environment, gunakan path yang benar
+        if (\App\Helpers\HostingStorageHelper::isHostingEnvironment()) {
+            $paths = \App\Helpers\HostingStorageHelper::getHostingPaths();
+            
+            // Coba path di public_html/storage (untuk file baru)
+            $publicStoragePath = $paths['public_storage'] . '/' . $this->foto;
             if (file_exists($publicStoragePath)) {
-                return asset('storage/' . $this->foto);
+                // URL relatif dari public_html
+                $relativePath = str_replace($paths['public_html'] . '/', '', $publicStoragePath);
+                return asset($relativePath);
             }
 
             // Coba path di public_html/uploads/galeri (untuk file lama)
-            $legacyPath = public_path('uploads/galeri/' . $this->foto);
+            $legacyPath = $paths['public_html'] . '/uploads/galeri/' . $this->foto;
             if (file_exists($legacyPath)) {
                 return asset('uploads/galeri/' . $this->foto);
             }
+        }
+
+        // Untuk localhost atau fallback
+        // Coba path di public/storage
+        $publicStoragePath = public_path('storage/' . $this->foto);
+        if (file_exists($publicStoragePath)) {
+            return asset('storage/' . $this->foto);
         }
 
         // Fallback ke path lama untuk foto yang sudah ada

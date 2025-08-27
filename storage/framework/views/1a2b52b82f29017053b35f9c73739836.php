@@ -52,7 +52,7 @@
                 <?php $__currentLoopData = $galeri->foto; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $foto): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                     <div class="group relative aspect-square overflow-hidden rounded-lg cursor-pointer bg-white shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
                          onclick="openPhotoModal(<?php echo e($loop->index); ?>)">
-                        <img src="<?php echo e(asset('uploads/galeri/' . $foto->foto)); ?>" 
+                        <img src="<?php echo e($foto->foto_url); ?>" 
                              alt="Foto <?php echo e($loop->iteration); ?>"
                              class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                              loading="lazy">
@@ -149,7 +149,11 @@
 
 <?php $__env->startPush('scripts'); ?>
 <script>
-    const photos = <?php echo json_encode($galeri->foto->map(function($foto) { return $foto->foto; }), 15, 512) ?>;
+    const photos = <?php echo json_encode($galeri->foto->map(function($foto) { 
+        return [
+            'foto' => $foto->foto, 'foto_url' => $foto->foto_url
+        ]; 
+    }), 512) ?>;
     let currentPhotoIndex = 0;
     
     function openPhotoModal(index) {
@@ -175,7 +179,7 @@
         const modalPhoto = document.getElementById('modalPhoto');
         const photoCounter = document.getElementById('photoCounter');
         
-        modalPhoto.src = `/uploads/galeri/${photos[currentPhotoIndex]}`;
+        modalPhoto.src = photos[currentPhotoIndex].foto_url;
         modalPhoto.alt = `Foto ${currentPhotoIndex + 1}`;
         photoCounter.textContent = `${currentPhotoIndex + 1} dari ${photos.length}`;
     }
@@ -192,7 +196,7 @@
     
     function downloadPhoto() {
         const link = document.createElement('a');
-        link.href = `/uploads/galeri/${photos[currentPhotoIndex]}`;
+        link.href = photos[currentPhotoIndex].foto_url;
         link.download = `foto_${currentPhotoIndex + 1}.jpg`;
         link.click();
     }

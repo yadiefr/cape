@@ -19,8 +19,8 @@
                             <h5><i class="icon fas fa-info"></i> Hosting Environment Detected</h5>
                             This tool helps synchronize uploaded files between your Laravel project and the public directory.
                             <br>
-                            <strong>Source:</strong> /home/user/project_laravel/storage/app/public/<br>
-                            <strong>Target:</strong> /home/user/public_html/storage/
+                            <strong>Source:</strong> {{ $syncStatus['base_path'] ?? '/home/smkpgric/cape' }}/storage/app/public/<br>
+                            <strong>Target:</strong> {{ str_replace('/cape', '', $syncStatus['base_path'] ?? '/home/smkpgric') }}/public_html/storage/
                         </div>
                         
                         <div class="row mb-3">
@@ -303,6 +303,15 @@ $(document).ready(function() {
                 var html = '<div class="alert alert-success">';
                 html += '<h6>✅ ' + response.message + '</h6>';
                 html += '<p><strong>Path:</strong> ' + response.path + '</p>';
+                
+                if (response.paths_used) {
+                    html += '<h6>Paths Used:</h6>';
+                    html += '<ul>';
+                    for (var pathName in response.paths_used) {
+                        html += '<li><strong>' + pathName + ':</strong> ' + response.paths_used[pathName] + '</li>';
+                    }
+                    html += '</ul>';
+                }
                 
                 if (response.file_checks) {
                     html += '<h6>File Existence Checks:</h6>';

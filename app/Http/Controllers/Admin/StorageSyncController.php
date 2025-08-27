@@ -239,18 +239,20 @@ class StorageSyncController extends Controller
                 $path = HostingStorageHelper::handleHostingUpload($file, 'test');
                 
                 if ($path) {
+                    $paths = HostingStorageHelper::getHostingPaths();
+                    
                     return response()->json([
                         'success' => true,
                         'message' => 'File uploaded successfully to hosting',
                         'path' => $path,
+                        'paths_used' => $paths,
                         'file_checks' => [
-                            'primary_exists' => file_exists(storage_path('app/public/' . $path)),
-                            'secondary_exists' => file_exists(base_path('../project_laravel/storage/app/public/' . $path)),
-                            'public_exists' => file_exists(base_path('../public_html/storage/' . $path)),
+                            'current_storage' => file_exists($paths['current_storage'] . '/' . $path),
+                            'public_storage' => file_exists($paths['public_storage'] . '/' . $path),
                         ]
                     ]);
                 } else {
-                    return response()->json(['error' => 'Upload failed'], 500);
+                    return response()->json(['error' => 'Upload failed - check Laravel logs'], 500);
                 }
             } else {
                 $path = $file->store('test', 'public');
@@ -261,6 +263,7 @@ class StorageSyncController extends Controller
                 ]);
             }
         } catch (\Exception $e) {
+            Log::error('Test upload error: ' . $e->getMessage());
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }

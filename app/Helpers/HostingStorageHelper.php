@@ -33,12 +33,32 @@ class HostingStorageHelper
      */
     public static function getHostingPaths(): array
     {
-        return [
-            'laravel_project' => base_path('../project_laravel'),
-            'public_html' => base_path('../public_html'),
-            'laravel_storage' => base_path('../project_laravel/storage/app/public'),
-            'public_storage' => base_path('../public_html/storage'),
-        ];
+        $basePath = base_path();
+        
+        // Detect actual hosting structure
+        if (strpos($basePath, '/home/') === 0) {
+            // Hosting environment detected
+            $userDir = dirname($basePath); // /home/smkpgric from /home/smkpgric/cape
+            
+            return [
+                'current_laravel' => $basePath,
+                'laravel_project' => $userDir . '/project_laravel',
+                'public_html' => $userDir . '/public_html',
+                'current_storage' => $basePath . '/storage/app/public',
+                'laravel_storage' => $userDir . '/project_laravel/storage/app/public',
+                'public_storage' => $userDir . '/public_html/storage',
+            ];
+        } else {
+            // Fallback untuk localhost atau struktur lain
+            return [
+                'current_laravel' => $basePath,
+                'laravel_project' => base_path('../project_laravel'),
+                'public_html' => base_path('../public_html'),
+                'current_storage' => $basePath . '/storage/app/public',
+                'laravel_storage' => base_path('../project_laravel/storage/app/public'),
+                'public_storage' => base_path('../public_html/storage'),
+            ];
+        }
     }
     
     /**
@@ -96,23 +116,19 @@ class HostingStorageHelper
             
             $relativePath = $directory . '/' . $filename;
             
-            // Path untuk hosting
+            // Get hosting paths
             $paths = self::getHostingPaths();
+            Log::info("Hosting paths: " . json_encode($paths));
             
-            // Primary storage path (current Laravel directory)
-            $primaryPath = storage_path('app/public/' . $relativePath);
-            $primaryDir = dirname($primaryPath);
+            // Target paths untuk hosting
+            $currentStoragePath = $paths['current_storage'] . '/' . $relativePath;
+            $publicStoragePath = $paths['public_storage'] . '/' . $relativePath;
             
-            // Secondary storage path (project_laravel if different)
-            $secondaryPath = $paths['laravel_storage'] . '/' . $relativePath;
-            $secondaryDir = dirname($secondaryPath);
+            // Ensure directories exist
+            $currentDir = dirname($currentStoragePath);
+            $publicDir = dirname($publicStoragePath);
             
-            // Public HTML path
-            $publicPath = $paths['public_storage'] . '/' . $relativePath;
-            $publicDir = dirname($publicPath);
-            
-            // Ensure all directories exist
-            foreach ([$primaryDir, $secondaryDir, $publicDir] as $dir) {
+            foreach ([$currentDir, $publicDir] as $dir) {
                 if (!is_dir($dir)) {
                     if (!File::makeDirectory($dir, 0755, true)) {
                         Log::error("Failed to create directory: $dir");
@@ -123,38 +139,28 @@ class HostingStorageHelper
                 }
             }
             
-            // Save file ke primary location
-            $uploadSuccess = false;
-            if ($file->storeAs('public/' . $directory, $filename)) {
-                Log::info("File uploaded to primary storage: $primaryPath");
-                $uploadSuccess = true;
-                @chmod($primaryPath, 0644);
-            }
-            
-            // Copy to secondary location if different from primary
-            if ($uploadSuccess && $secondaryPath !== $primaryPath) {
-                if (file_exists($primaryPath) && copy($primaryPath, $secondaryPath)) {
-                    @chmod($secondaryPath, 0644);
-                    Log::info("File copied to secondary storage: $secondaryPath");
+            // Move uploaded file to current storage
+            if ($file->move($currentDir, $filename)) {
+                @chmod($currentStoragePath, 0644);
+                Log::info("File moved to current storage: $currentStoragePath");
+                
+                // Copy to public HTML storage
+                if (copy($currentStoragePath, $publicStoragePath)) {
+                    @chmod($publicStoragePath, 0644);
+                    Log::info("File copied to public storage: $publicStoragePath");
                 } else {
-                    Log::warning("Failed to copy to secondary storage: $secondaryPath");
+                    Log::error("Failed to copy to public storage: $publicStoragePath");
                 }
+                
+                return $relativePath;
+            } else {
+                Log::error("Failed to move file to: $currentStoragePath");
+                return null;
             }
-            
-            // Copy to public HTML
-            if ($uploadSuccess && file_exists($primaryPath)) {
-                if (copy($primaryPath, $publicPath)) {
-                    @chmod($publicPath, 0644);
-                    Log::info("File copied to public HTML: $publicPath");
-                } else {
-                    Log::error("Failed to copy to public HTML: $publicPath");
-                }
-            }
-            
-            return $uploadSuccess ? $relativePath : null;
             
         } catch (\Exception $e) {
             Log::error("Error in hosting upload: " . $e->getMessage());
+            Log::error("Stack trace: " . $e->getTraceAsString());
             return null;
         }
     }

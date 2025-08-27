@@ -261,4 +261,30 @@ class GaleriFotoController extends Controller
             'expected_url' => $result ? asset('uploads/' . $result) : null
         ]);
     }
+
+    // DEBUG: Test galeri upload FORCE HOSTING
+    public function testGaleriUploadForce(Request $request)
+    {
+        $request->validate([
+            'test_file' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
+        ]);
+
+        $file = $request->file('test_file');
+        $result = HostingStorageHelper::uploadFileForceHosting($file, 'galeri');
+
+        $paths = HostingStorageHelper::getHostingPaths();
+
+        return response()->json([
+            'upload_result' => $result,
+            'FORCED_HOSTING_MODE' => true,
+            'is_hosting' => HostingStorageHelper::isHostingEnvironment(),
+            'paths' => $paths,
+            'file_checks' => [
+                'laravel_storage' => file_exists(storage_path('app/public/' . $result)),
+                'public_uploads' => file_exists($paths['public_uploads'] . '/' . $result),
+                'current_uploads' => file_exists($paths['current_uploads'] . '/' . $result),
+            ],
+            'expected_url' => $result ? asset('uploads/' . $result) : null
+        ]);
+    }
 }

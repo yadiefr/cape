@@ -24,8 +24,68 @@ class HostingStorageHelper
             // Environment bukan localhost
             !in_array(request()->getHost(), ['localhost', '127.0.0.1', '::1']),
         ];
-        
-        return count(array_filter($indicators)) >= 2;
+
+        $isHosting = count(array_filter($indicators)) >= 2;
+
+        // Log detailed information
+        Log::info("Environment Detection Details:");
+        Log::info("- Base path: " . base_path());
+        Log::info("- Request host: " . request()->getHost());
+        Log::info("- Contains 'project_laravel': " . (strpos(base_path(), 'project_laravel') !== false ? 'YES' : 'NO'));
+        Log::info("- Has ../project_laravel dir: " . (is_dir(base_path('../project_laravel')) ? 'YES' : 'NO'));
+        Log::info("- Has ../public_html dir: " . (is_dir(base_path('../public_html')) ? 'YES' : 'NO'));
+        Log::info("- Path starts with /home/: " . (strpos(base_path(), '/home/') === 0 ? 'YES' : 'NO'));
+        Log::info("- Is localhost: " . (in_array(request()->getHost(), ['localhost', '127.0.0.1', '::1']) ? 'YES' : 'NO'));
+        Log::info("- Final result: " . ($isHosting ? 'HOSTING' : 'LOCALHOST'));
+
+        return $isHosting;
+    }
+
+    /**
+     * Force hosting mode untuk testing (temporary)
+     */
+    public static function forceHostingMode(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Universal file upload handler for hosting - FORCE HOSTING MODE
+     * Menangani semua jenis upload file dengan konsisten - FOR TESTING
+     */
+    public static function uploadFileForceHosting($file, $directory, $filename = null): ?string
+    {
+        if (!$file || !$file->isValid()) {
+            Log::error("Invalid file for upload to directory: $directory");
+            return null;
+        }
+
+        try {
+            // Get file info before processing (avoid temp file issues)
+            $originalName = $file->getClientOriginalName();
+            $extension = $file->getClientOriginalExtension();
+
+            // Generate filename jika tidak disediakan
+            if (!$filename) {
+                $timestamp = time();
+                $random = uniqid();
+                $filename = $directory . '_' . $timestamp . '_' . $random . '.' . $extension;
+            }
+
+            $relativePath = $directory . '/' . $filename;
+
+            Log::info("UploadFileForceHosting called - Directory: $directory, FORCED HOSTING MODE");
+            Log::info("Base path: " . base_path());
+            Log::info("Request host: " . request()->getHost());
+
+            // FORCE HOSTING MODE for testing
+            Log::info("FORCED: Using HOSTING upload for directory: $directory");
+            return self::handleHostingUpload($file, $directory, $filename);
+
+        } catch (\Exception $e) {
+            Log::error("Error in uploadFileForceHosting for directory $directory: " . $e->getMessage());
+            return null;
+        }
     }
     
     /**
@@ -35,10 +95,17 @@ class HostingStorageHelper
     {
         $basePath = base_path();
 
+        Log::info("Getting hosting paths for base path: " . $basePath);
+
         // Detect actual hosting structure
         if (strpos($basePath, '/home/') === 0) {
             // Hosting environment detected
             $userDir = dirname($basePath); // /home/smkpgric from /home/smkpgric/cape
+            $projectName = basename($basePath); // 'cape' from /home/smkpgric/cape
+
+            Log::info("Detected hosting structure:");
+            Log::info("- User dir: " . $userDir);
+            Log::info("- Project name: " . $projectName);
 
             return [
                 'current_laravel' => $basePath,
@@ -52,6 +119,7 @@ class HostingStorageHelper
                 'current_uploads' => $basePath . '/public/uploads',
             ];
         } else {
+            Log::info("Using localhost fallback paths");
             // Fallback untuk localhost atau struktur lain
             return [
                 'current_laravel' => $basePath,
@@ -65,9 +133,7 @@ class HostingStorageHelper
                 'current_uploads' => $basePath . '/public/uploads',
             ];
         }
-    }
-    
-    /**
+    }    /**
      * Ensure directory structure exists untuk hosting
      */
     public static function ensureHostingDirectories(): array
@@ -213,6 +279,12 @@ class HostingStorageHelper
             // Target paths untuk hosting - gunakan uploads directory
             $publicUploadsPath = $paths['public_uploads'] . '/' . $relativePath;
             $currentUploadsPath = $paths['current_uploads'] . '/' . $relativePath;
+
+            Log::info("Target paths:");
+            Log::info("- Public uploads: " . $publicUploadsPath);
+            Log::info("- Current uploads: " . $currentUploadsPath);
+            Log::info("- Public uploads dir exists: " . (is_dir(dirname($publicUploadsPath)) ? 'YES' : 'NO'));
+            Log::info("- Current uploads dir exists: " . (is_dir(dirname($currentUploadsPath)) ? 'YES' : 'NO'));
 
             // Ensure directories exist
             $publicDir = dirname($publicUploadsPath);

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Settings;
+use App\Helpers\HostingStorageHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -212,30 +213,43 @@ class SettingsController extends Controller
                 $filename = $key . '_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
                 
                 try {
-                    // Store the file in the public disk under 'settings' directory
-                    $path = $file->storeAs('settings', $filename, 'public');
-                    \Log::info("File stored at: {$path}");
+                    // Ensure directories exist
+                    $storagePath = storage_path('app/public/settings');
+                    if (!is_dir($storagePath)) {
+                        mkdir($storagePath, 0755, true);
+                        chmod($storagePath, 0755);
+                    }
                     
-                    // Always copy to public/storage for hosting compatibility
                     $publicStoragePath = public_path('storage/settings');
-                    if (!file_exists($publicStoragePath)) {
+                    if (!is_dir($publicStoragePath)) {
                         mkdir($publicStoragePath, 0755, true);
                         chmod($publicStoragePath, 0755);
                     }
                     
-                    $sourceFile = storage_path('app/public/' . $path);
-                    $destFile = public_path('storage/' . $path);
+                    // Store the file in the public disk under 'settings' directory
+                    $path = $file->storeAs('settings', $filename, 'public');
+                    \Log::info("File stored at: {$path}");
                     
-                    if (file_exists($sourceFile)) {
-                        if (copy($sourceFile, $destFile)) {
-                            chmod($destFile, 0644);
-                            \Log::info("File copied to public storage: {$destFile}");
-                        } else {
-                            \Log::error("Failed to copy file to public storage: {$destFile}");
-                        }
+                    // For hosting environments, use HostingStorageHelper
+                    if (HostingStorageHelper::isHostingEnvironment()) {
+                        HostingStorageHelper::syncFileToHosting($path);
                     } else {
-                        \Log::error("Source file not found: {$sourceFile}");
+                        // Copy to public/storage for localhost
+                        $sourceFile = storage_path('app/public/' . $path);
+                        $destFile = public_path('storage/' . $path);
+                        
+                        if (file_exists($sourceFile)) {
+                            if (copy($sourceFile, $destFile)) {
+                                chmod($destFile, 0644);
+                                \Log::info("File copied to public storage: {$destFile}");
+                            } else {
+                                \Log::error("Failed to copy file to public storage: {$destFile}");
+                            }
+                        }
                     }
+                    
+                    // For hosting environments, also try to copy to hosting paths
+                    $this->copyToHostingPaths($path);
                     
                     // Delete old file if exists
                     if ($oldFilePath && Storage::disk('public')->exists($oldFilePath)) {
@@ -246,6 +260,8 @@ class SettingsController extends Controller
                             if (file_exists($oldPublicFile)) {
                                 unlink($oldPublicFile);
                             }
+                            // Delete from hosting paths if applicable
+                            $this->deleteFromHostingPaths($oldFilePath);
                             \Log::info("Deleted old file: {$oldFilePath}");
                         } catch (\Exception $e) {
                             \Log::error("Failed to delete old file {$oldFilePath}: " . $e->getMessage());
@@ -287,6 +303,58 @@ class SettingsController extends Controller
         }
         
         return $uploadedFiles;
+    }
+    
+    /**
+     * Copy file to hosting paths if detected
+     */
+    private function copyToHostingPaths($relativePath)
+    {
+        $sourceFile = storage_path('app/public/' . $relativePath);
+        
+        // Try common hosting paths
+        $hostingPaths = [
+            base_path('../project_laravel/storage/app/public/' . $relativePath),
+            base_path('../public_html/storage/' . $relativePath),
+        ];
+        
+        foreach ($hostingPaths as $hostingPath) {
+            try {
+                $hostingDir = dirname($hostingPath);
+                if (!is_dir($hostingDir)) {
+                    mkdir($hostingDir, 0755, true);
+                }
+                
+                if (file_exists($sourceFile) && copy($sourceFile, $hostingPath)) {
+                    chmod($hostingPath, 0644);
+                    \Log::info("File copied to hosting path: {$hostingPath}");
+                }
+            } catch (\Exception $e) {
+                \Log::warning("Failed to copy to hosting path {$hostingPath}: " . $e->getMessage());
+            }
+        }
+    }
+    
+    /**
+     * Delete file from hosting paths
+     */
+    private function deleteFromHostingPaths($relativePath)
+    {
+        $hostingPaths = [
+            base_path('../project_laravel/storage/app/public/' . $relativePath),
+            base_path('../public_html/storage/' . $relativePath),
+        ];
+        
+        foreach ($hostingPaths as $hostingPath) {
+            if (file_exists($hostingPath)) {
+                try {
+                    unlink($hostingPath);
+                    \Log::info("Deleted file from hosting path: {$hostingPath}");
+                } catch (\Exception $e) {
+                    \Log::warning("Failed to delete from hosting path {$hostingPath}: " . $e->getMessage());
+                }
+            }
+        }
     }
     
     /**

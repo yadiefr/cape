@@ -1,8 +1,8 @@
-@extends('layouts.admin')
 
-@section('title', 'Storage Sync')
 
-@section('content')
+<?php $__env->startSection('title', 'Storage Sync'); ?>
+
+<?php $__env->startSection('content'); ?>
 <div class="container-fluid">
     <div class="row">
         <div class="col-12">
@@ -14,7 +14,7 @@
                     </h3>
                 </div>
                 <div class="card-body">
-                    @if($isHosting)
+                    <?php if($isHosting): ?>
                         <div class="alert alert-info">
                             <h5><i class="icon fas fa-info"></i> Hosting Environment Detected</h5>
                             This tool helps synchronize uploaded files between your Laravel project and the public directory.
@@ -31,7 +31,7 @@
                                     </span>
                                     <div class="info-box-content">
                                         <span class="info-box-text">Total Files</span>
-                                        <span class="info-box-number">{{ isset($syncStatus['files']) ? count($syncStatus['files']) : 0 }}</span>
+                                        <span class="info-box-number"><?php echo e(isset($syncStatus['files']) ? count($syncStatus['files']) : 0); ?></span>
                                     </div>
                                 </div>
                             </div>
@@ -42,7 +42,7 @@
                                     </span>
                                     <div class="info-box-content">
                                         <span class="info-box-text">Synced Files</span>
-                                        <span class="info-box-number">{{ isset($syncStatus['files']) ? count(array_filter($syncStatus['files'], fn($f) => $f['target_exists'] ?? false)) : 0 }}</span>
+                                        <span class="info-box-number"><?php echo e(isset($syncStatus['files']) ? count(array_filter($syncStatus['files'], fn($f) => $f['target_exists'] ?? false)) : 0); ?></span>
                                     </div>
                                 </div>
                             </div>
@@ -53,18 +53,18 @@
                                     </span>
                                     <div class="info-box-content">
                                         <span class="info-box-text">Missing Files</span>
-                                        <span class="info-box-number">{{ isset($syncStatus['files']) ? count(array_filter($syncStatus['files'], fn($f) => $f['needs_sync'] ?? false)) : 0 }}</span>
+                                        <span class="info-box-number"><?php echo e(isset($syncStatus['files']) ? count(array_filter($syncStatus['files'], fn($f) => $f['needs_sync'] ?? false)) : 0); ?></span>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="info-box">
-                                    <span class="info-box-icon {{ ($syncStatus['needs_sync'] ?? false) ? 'bg-danger' : 'bg-success' }}">
-                                        <i class="fas {{ ($syncStatus['needs_sync'] ?? false) ? 'fa-times' : 'fa-check' }}"></i>
+                                    <span class="info-box-icon <?php echo e(($syncStatus['needs_sync'] ?? false) ? 'bg-danger' : 'bg-success'); ?>">
+                                        <i class="fas <?php echo e(($syncStatus['needs_sync'] ?? false) ? 'fa-times' : 'fa-check'); ?>"></i>
                                     </span>
                                     <div class="info-box-content">
                                         <span class="info-box-text">Status</span>
-                                        <span class="info-box-number">{{ ($syncStatus['needs_sync'] ?? false) ? 'Needs Sync' : 'Up to Date' }}</span>
+                                        <span class="info-box-number"><?php echo e(($syncStatus['needs_sync'] ?? false) ? 'Needs Sync' : 'Up to Date'); ?></span>
                                     </div>
                                 </div>
                             </div>
@@ -107,14 +107,15 @@
                             </div>
                         </div>
                         
-                    @else
+                    <?php else: ?>
                         <div class="alert alert-success">
                             <h5><i class="icon fas fa-check"></i> Localhost Environment</h5>
                             You are running on localhost. File synchronization is not needed as Laravel can directly access storage files.
                             <br>
-                            <strong>Storage Path:</strong> {{ storage_path('app/public/') }}
+                            <strong>Storage Path:</strong> <?php echo e(storage_path('app/public/')); ?>
+
                         </div>
-                    @endif
+                    <?php endif; ?>
                     
                     <div class="mt-4">
                         <h5>Instructions:</h5>
@@ -151,7 +152,7 @@ $(document).ready(function() {
         $('#syncResults').hide();
         
         $.ajax({
-            url: '{{ route("admin.storage-sync.sync") }}',
+            url: '<?php echo e(route("admin.storage-sync.sync")); ?>',
             method: 'POST',
             headers: {
                 'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
@@ -228,7 +229,7 @@ $(document).ready(function() {
         btn.html('<i class="fas fa-spinner fa-spin"></i> Loading...');
         
         $.ajax({
-            url: '{{ route("admin.storage-sync.debug") }}',
+            url: '<?php echo e(route("admin.storage-sync.debug")); ?>',
             method: 'GET',
             success: function(response) {
                 var html = '<div class="alert alert-info">';
@@ -257,4 +258,6 @@ $(document).ready(function() {
 });
 </script>
 
-@endsection
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.admin', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\wamp64\www\website-smk3\resources\views/admin/storage-sync/index.blade.php ENDPATH**/ ?>

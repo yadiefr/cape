@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Settings;
+use App\Helpers\HostingStorageHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
@@ -15,8 +16,8 @@ class StorageSyncController extends Controller
      */
     public function index()
     {
-        $isHosting = $this->detectHostingEnvironment();
-        $syncStatus = $this->checkSyncStatus();
+        $isHosting = HostingStorageHelper::isHostingEnvironment();
+        $syncStatus = $isHosting ? HostingStorageHelper::getHostingStatus() : ['environment' => 'localhost'];
         
         return view('admin.storage-sync.index', compact('isHosting', 'syncStatus'));
     }
@@ -27,54 +28,24 @@ class StorageSyncController extends Controller
     public function sync(Request $request)
     {
         try {
-            $results = [];
-            $totalSynced = 0;
-            $totalErrors = 0;
-            
-            // Deteksi environment hosting
-            $isHosting = $this->detectHostingEnvironment();
-            
-            if (!$isHosting) {
+            // Use HostingStorageHelper untuk sync
+            if (HostingStorageHelper::isHostingEnvironment()) {
+                $results = HostingStorageHelper::syncAllSettingsToHosting();
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => "Hosting sync completed: {$results['successful']}/{$results['total_files']} files synced",
+                    'results' => $results,
+                    'is_hosting' => true
+                ]);
+            } else {
                 return response()->json([
                     'success' => true,
                     'message' => 'Localhost environment - no sync needed',
-                    'results' => []
+                    'results' => ['message' => 'Running on localhost'],
+                    'is_hosting' => false
                 ]);
             }
-            
-            // Get all image settings
-            $imageSettings = Settings::where('type', 'image')->get();
-            
-            foreach ($imageSettings as $setting) {
-                if (!$setting->value) {
-                    continue;
-                }
-                
-                $result = $this->syncSingleFile($setting->value, $setting->key);
-                $results[] = $result;
-                
-                if ($result['success']) {
-                    $totalSynced++;
-                } else {
-                    $totalErrors++;
-                }
-            }
-            
-            // Juga sync direktori guru jika ada
-            $this->syncDirectory('guru');
-            
-            $message = "Sync completed: {$totalSynced} files synced";
-            if ($totalErrors > 0) {
-                $message .= ", {$totalErrors} errors";
-            }
-            
-            return response()->json([
-                'success' => true,
-                'message' => $message,
-                'results' => $results,
-                'total_synced' => $totalSynced,
-                'total_errors' => $totalErrors
-            ]);
             
         } catch (\Exception $e) {
             Log::error('Storage sync error: ' . $e->getMessage());
@@ -200,7 +171,52 @@ class StorageSyncController extends Controller
         $projectLaravelPath = base_path('../project_laravel');
         $publicHtmlPath = base_path('../public_html');
         
-        return (is_dir($projectLaravelPath) && is_dir($publicHtmlPath));
+        // Juga cek berdasarkan path absolut yang umum di hosting
+        $isHostingPath = strpos(base_path(), '/home/') === 0 || strpos(base_path(), 'project_laravel') !== false;
+        
+        return (is_dir($projectLaravelPath) && is_dir($publicHtmlPath)) || $isHostingPath;
+    }
+    
+    /**
+     * Debug info untuk troubleshooting
+     */
+    public function debug()
+    {
+        // Use HostingStorageHelper untuk comprehensive debug info
+        $hostingStatus = HostingStorageHelper::getHostingStatus();
+        
+        $info = [
+            'hosting_status' => $hostingStatus,
+            'environment' => [
+                'is_hosting' => HostingStorageHelper::isHostingEnvironment(),
+                'base_path' => base_path(),
+                'storage_path' => storage_path(),
+                'public_path' => public_path(),
+                'app_url' => config('app.url'),
+                'server_name' => $_SERVER['SERVER_NAME'] ?? 'unknown',
+            ],
+            'paths' => HostingStorageHelper::getHostingPaths(),
+            'recommendations' => []
+        ];
+        
+        // Add recommendations based on findings
+        if ($hostingStatus['is_hosting']) {
+            if (isset($hostingStatus['needs_sync']) && $hostingStatus['needs_sync']) {
+                $info['recommendations'][] = 'Files need synchronization. Click "Sync Files Now" button.';
+            }
+            
+            if (isset($hostingStatus['directory_status'])) {
+                foreach ($hostingStatus['directory_status'] as $dir => $exists) {
+                    if (!$exists) {
+                        $info['recommendations'][] = "Directory missing: $dir. Use file manager to create it.";
+                    }
+                }
+            }
+        } else {
+            $info['recommendations'][] = 'Localhost environment detected. No hosting-specific sync needed.';
+        }
+        
+        return response()->json($info, 200, [], JSON_PRETTY_PRINT);
     }
     
     /**

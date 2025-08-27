@@ -1,0 +1,6 @@
+# pack-refs with: peeled fully-peeled sorted 
+91a35c56db1a8e27e99487eafd27fb0ce9abe963 refs/remotes/origin/add-docs-to-facade-for-phpstan
+6d6284a491f07c74d34f48dfd999ed52c567c713 refs/remotes/origin/main
+2e36a8d29919cfb089941ab81effd8e862dee994 refs/remotes/origin/sse-transport
+417890c0d8032af9a46a86d16651bbe13946cddf refs/tags/v0.1.0
+6d6284a491f07c74d34f48dfd999ed52c567c713 refs/tags/v0.1.1

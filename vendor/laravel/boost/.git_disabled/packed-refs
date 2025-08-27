@@ -1,0 +1,26 @@
+# pack-refs with: peeled fully-peeled sorted 
+bfe1ecc3607fb0fc720b70a7e7524be5a6a1ce43 refs/remotes/origin/chore/removes-pint-constraint
+54e889497675574e297262e62bbfd2ba4a9982da refs/remotes/origin/fix/environment-based-gating
+55242d957424a883411a4c77941cfc6fdd1c3872 refs/remotes/origin/fix/non-necessary-php-version
+ee1e44855eada14b0022827d6fbf757213213ffd refs/remotes/origin/main
+6699749b4800560300b085f0794f9eb8d8ccfb6e refs/remotes/origin/support-false-content
+738067354a911dd920c5514ad8a84a35d08a70ae refs/remotes/origin/themed-logo
+82ea47856350d1ebd98e61944d9499bc43972435 refs/tags/v1.0.0
+41c82ab1ef3a95ae2442ccc1fbba10d93a42e341 refs/tags/v1.0.1
+4363702af768593a95aff71f37c248553ed55c02 refs/tags/v1.0.10
+e879890e2ebb9f9ad4bba6feedd7065dd8b89929 refs/tags/v1.0.11
+52d6c9186eaa76fd350408a866b157e4b7ace1e3 refs/tags/v1.0.12
+f386e45197352529e6b56fcd13af63c55a464ea3 refs/tags/v1.0.13
+89dcf8a8cac9dcdfc9c452115e215c9fdfa3efcf refs/tags/v1.0.14
+30c4d51e17fa4eeb36cca07bf963b04725af6fbd refs/tags/v1.0.15
+5dce9e9a3b7be1df65f64f9d565b0f64fbc5700c refs/tags/v1.0.16
+3d1121561f793d027b76cb02b4ef9e654f8870fb refs/tags/v1.0.17
+df2a62b5864759ea8cce8a4b7575b657e9c7d4ab refs/tags/v1.0.18
+010b8c7792ec6fe2ce6fbf83703f1ed52febbda9 refs/tags/v1.0.2
+f16097e126494e19d775675889aab8fc0b783677 refs/tags/v1.0.3
+35ee607c007f16bb714bfd86f14c32307370534f refs/tags/v1.0.4
+ad3d438280a7a552fd9e0fac7ecea29ffe3e6e00 refs/tags/v1.0.5
+b9615d54d3d47b0edc7c837654a68186f640ebdc refs/tags/v1.0.6
+e3487b28972d84fc64e2beb5b9f892ea2916c9ff refs/tags/v1.0.7
+bc67128806bf29f88d2e65216602a620ff26d7f7 refs/tags/v1.0.8
+ad025a2f2325ccdc5f52e926dab4e0c1d2c6def9 refs/tags/v1.0.9

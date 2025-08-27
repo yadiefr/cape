@@ -30,6 +30,21 @@ class GaleriFoto extends Model
             return Storage::disk('public')->url($this->foto);
         }
 
+        // Untuk hosting environment, coba path alternatif
+        if (app()->environment() !== 'local') {
+            // Coba path di public_html/storage
+            $publicStoragePath = public_path('storage/' . $this->foto);
+            if (file_exists($publicStoragePath)) {
+                return asset('storage/' . $this->foto);
+            }
+
+            // Coba path di public_html/uploads/galeri (untuk file lama)
+            $legacyPath = public_path('uploads/galeri/' . $this->foto);
+            if (file_exists($legacyPath)) {
+                return asset('uploads/galeri/' . $this->foto);
+            }
+        }
+
         // Fallback ke path lama untuk foto yang sudah ada
         return asset('uploads/galeri/' . $this->foto);
     }

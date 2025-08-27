@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Helpers\HostingStorageHelper;
 
 class JurusanController extends Controller
 {
@@ -73,17 +74,25 @@ class JurusanController extends Controller
         // Handle logo upload if present
         if ($request->hasFile('logo')) {
             $logo = $request->file('logo');
-            $logoName = 'jurusan_logo_' . Str::slug($request->kode_jurusan) . '.' . $logo->getClientOriginalExtension();
-            $logo->storeAs('public/jurusan/logo', $logoName);
-            $data['logo'] = 'jurusan/logo/' . $logoName;
+            $logoPath = HostingStorageHelper::uploadFile($logo, 'jurusan/logo');
+            
+            if (!$logoPath) {
+                return redirect()->back()->with('error', 'Gagal mengupload logo jurusan. Silakan coba lagi.');
+            }
+            
+            $data['logo'] = $logoPath;
         }
         
         // Handle gambar header upload if present
         if ($request->hasFile('gambar_header')) {
             $header = $request->file('gambar_header');
-            $headerName = 'jurusan_header_' . Str::slug($request->kode_jurusan) . '.' . $header->getClientOriginalExtension();
-            $header->storeAs('public/jurusan/header', $headerName);
-            $data['gambar_header'] = 'jurusan/header/' . $headerName;
+            $headerPath = HostingStorageHelper::uploadFile($header, 'jurusan/header');
+            
+            if (!$headerPath) {
+                return redirect()->back()->with('error', 'Gagal mengupload gambar header jurusan. Silakan coba lagi.');
+            }
+            
+            $data['gambar_header'] = $headerPath;
         }
         
         // Set is_active default value if not provided
@@ -136,27 +145,51 @@ class JurusanController extends Controller
         // Handle logo upload if present
         if ($request->hasFile('logo')) {
             // Delete old logo if exists
-            if ($jurusan->logo && Storage::exists('public/' . $jurusan->logo)) {
-                Storage::delete('public/' . $jurusan->logo);
+            if ($jurusan->logo) {
+                Storage::disk('public')->delete($jurusan->logo);
+                // Also delete from hosting paths
+                if (HostingStorageHelper::isHostingEnvironment()) {
+                    $paths = HostingStorageHelper::getHostingPaths();
+                    $hostingFile = $paths['public_storage'] . '/' . $jurusan->logo;
+                    if (file_exists($hostingFile)) {
+                        @unlink($hostingFile);
+                    }
+                }
             }
             
             $logo = $request->file('logo');
-            $logoName = 'jurusan_logo_' . Str::slug($request->kode_jurusan) . '.' . $logo->getClientOriginalExtension();
-            $logo->storeAs('public/jurusan/logo', $logoName);
-            $data['logo'] = 'jurusan/logo/' . $logoName;
+            $logoPath = HostingStorageHelper::uploadFile($logo, 'jurusan/logo');
+            
+            if (!$logoPath) {
+                return redirect()->back()->with('error', 'Gagal mengupload logo jurusan. Silakan coba lagi.');
+            }
+            
+            $data['logo'] = $logoPath;
         }
         
         // Handle gambar header upload if present
         if ($request->hasFile('gambar_header')) {
             // Delete old header if exists
-            if ($jurusan->gambar_header && Storage::exists('public/' . $jurusan->gambar_header)) {
-                Storage::delete('public/' . $jurusan->gambar_header);
+            if ($jurusan->gambar_header) {
+                Storage::disk('public')->delete($jurusan->gambar_header);
+                // Also delete from hosting paths
+                if (HostingStorageHelper::isHostingEnvironment()) {
+                    $paths = HostingStorageHelper::getHostingPaths();
+                    $hostingFile = $paths['public_storage'] . '/' . $jurusan->gambar_header;
+                    if (file_exists($hostingFile)) {
+                        @unlink($hostingFile);
+                    }
+                }
             }
             
             $header = $request->file('gambar_header');
-            $headerName = 'jurusan_header_' . Str::slug($request->kode_jurusan) . '.' . $header->getClientOriginalExtension();
-            $header->storeAs('public/jurusan/header', $headerName);
-            $data['gambar_header'] = 'jurusan/header/' . $headerName;
+            $headerPath = HostingStorageHelper::uploadFile($header, 'jurusan/header');
+            
+            if (!$headerPath) {
+                return redirect()->back()->with('error', 'Gagal mengupload gambar header jurusan. Silakan coba lagi.');
+            }
+            
+            $data['gambar_header'] = $headerPath;
         }
         
         // Set is_active value
@@ -180,12 +213,28 @@ class JurusanController extends Controller
         }
         
         // Delete logo and header if exists
-        if ($jurusan->logo && Storage::exists('public/' . $jurusan->logo)) {
-            Storage::delete('public/' . $jurusan->logo);
+        if ($jurusan->logo) {
+            Storage::disk('public')->delete($jurusan->logo);
+            // Also delete from hosting paths
+            if (HostingStorageHelper::isHostingEnvironment()) {
+                $paths = HostingStorageHelper::getHostingPaths();
+                $hostingFile = $paths['public_storage'] . '/' . $jurusan->logo;
+                if (file_exists($hostingFile)) {
+                    @unlink($hostingFile);
+                }
+            }
         }
         
-        if ($jurusan->gambar_header && Storage::exists('public/' . $jurusan->gambar_header)) {
-            Storage::delete('public/' . $jurusan->gambar_header);
+        if ($jurusan->gambar_header) {
+            Storage::disk('public')->delete($jurusan->gambar_header);
+            // Also delete from hosting paths
+            if (HostingStorageHelper::isHostingEnvironment()) {
+                $paths = HostingStorageHelper::getHostingPaths();
+                $hostingFile = $paths['public_storage'] . '/' . $jurusan->gambar_header;
+                if (file_exists($hostingFile)) {
+                    @unlink($hostingFile);
+                }
+            }
         }
         
         $jurusan->delete();

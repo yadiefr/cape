@@ -95,6 +95,34 @@ Route::get('/debug/tahun-kelas', function() {
 // Endpoint bel - tanpa middleware untuk memastikan akses mudah
 Route::get('/bel/check-current-time', 'App\Http\Controllers\BelApiController@checkCurrentTime');
 
+// Debug route untuk galeri
+Route::get('/debug/galeri/{id}', function($id) {
+    $galeri = \App\Models\Galeri::findOrFail($id);
+    $photos = \App\Models\GaleriFoto::where('galeri_id', $id)->get();
+    
+    $debug = [
+        'galeri' => $galeri,
+        'hosting_status' => \App\Helpers\HostingStorageHelper::getHostingStatus(),
+        'photos' => $photos->map(function($photo) {
+            return [
+                'id' => $photo->id,
+                'foto' => $photo->foto,
+                'foto_url' => $photo->foto_url,
+                'storage_path' => storage_path('app/public/' . $photo->foto),
+                'public_storage_path' => public_path('storage/' . $photo->foto),
+                'legacy_path' => public_path('uploads/galeri/' . $photo->foto),
+                'files_exist' => [
+                    'storage' => file_exists(storage_path('app/public/' . $photo->foto)),
+                    'public_storage' => file_exists(public_path('storage/' . $photo->foto)),
+                    'legacy' => file_exists(public_path('uploads/galeri/' . $photo->foto)),
+                ]
+            ];
+        })
+    ];
+    
+    return response()->json($debug);
+});
+
 // API untuk mendapatkan foto-foto dalam galeri
 Route::get('/galeri/{id}/photos', function($id) {
     $galeri = \App\Models\Galeri::findOrFail($id);
@@ -108,7 +136,14 @@ Route::get('/galeri/{id}/photos', function($id) {
         return [
             'foto' => $photo->foto,
             'is_thumbnail' => $photo->is_thumbnail,
-            'foto_url' => $photo->foto_url
+            'foto_url' => $photo->foto_url,
+            'debug_info' => [
+                'storage_exists' => \Illuminate\Support\Facades\Storage::disk('public')->exists($photo->foto),
+                'public_storage_exists' => file_exists(public_path('storage/' . $photo->foto)),
+                'legacy_exists' => file_exists(public_path('uploads/galeri/' . $photo->foto)),
+                'is_hosting' => \App\Helpers\HostingStorageHelper::isHostingEnvironment(),
+                'environment' => app()->environment(),
+            ]
         ];
     });
     
@@ -129,7 +164,30 @@ Route::prefix('admin')->middleware(['web', 'auth'])->group(function () {
     Route::delete('guru/{guru}/remove-subject-assignment/{jadwal}', [App\Http\Controllers\Admin\GuruController::class, 'removeSubjectAssignment'])->name('api.guru.remove-subject-assignment');
 });
 
-// Test route untuk debugging
-Route::get('test-bel', function() {
-    return response()->json(['message' => 'API Test berhasil!', 'timestamp' => now()]);
+// Sync galeri files ke hosting
+Route::post('/sync/galeri-files', function() {
+    if (!\App\Helpers\HostingStorageHelper::isHostingEnvironment()) {
+        return response()->json(['message' => 'Not in hosting environment']);
+    }
+    
+    $photos = \App\Models\GaleriFoto::all();
+    $results = [];
+    
+    foreach ($photos as $photo) {
+        if ($photo->foto) {
+            $success = \App\Helpers\HostingStorageHelper::syncFileToHosting($photo->foto);
+            $results[] = [
+                'id' => $photo->id,
+                'foto' => $photo->foto,
+                'success' => $success,
+                'foto_url' => $photo->foto_url
+            ];
+        }
+    }
+    
+    return response()->json([
+        'total_files' => count($results),
+        'successful' => count(array_filter($results, fn($r) => $r['success'])),
+        'results' => $results
+    ]);
 });

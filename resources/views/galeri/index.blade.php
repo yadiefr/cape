@@ -242,13 +242,13 @@
                         const photoDiv = document.createElement('div');
                         photoDiv.className = 'relative aspect-square overflow-hidden rounded-lg cursor-pointer hover:scale-105 transition-transform duration-200';
                         photoDiv.innerHTML = `
-                            <img src="/uploads/galeri/${photo.foto}" alt="Foto ${index + 1}" class="w-full h-full object-cover">
+                            <img src="${photo.foto_url || '/uploads/galeri/' + photo.foto}" alt="Foto ${index + 1}" class="w-full h-full object-cover">
                             <div class="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors duration-200 flex items-center justify-center">
                                 <i class="fas fa-search-plus text-white opacity-0 hover:opacity-100 transition-opacity duration-200"></i>
                             </div>
                         `;
                         photoDiv.onclick = function() {
-                            window.open(`/uploads/galeri/${photo.foto}`, '_blank');
+                            window.open(photo.foto_url || `/uploads/galeri/${photo.foto}`, '_blank');
                         };
                         photosContainer.appendChild(photoDiv);
                     });

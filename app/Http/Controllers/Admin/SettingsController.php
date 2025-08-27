@@ -226,14 +226,24 @@ class SettingsController extends Controller
                         chmod($publicStoragePath, 0755);
                     }
                     
-                    // Store the file in the public disk under 'settings' directory
-                    $path = $file->storeAs('settings', $filename, 'public');
-                    \Log::info("File stored at: {$path}");
+                    // Generate a unique filename
+                    $filename = $key . '_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
                     
-                    // For hosting environments, use HostingStorageHelper
+                    // Use HostingStorageHelper for hosting environments
                     if (HostingStorageHelper::isHostingEnvironment()) {
-                        HostingStorageHelper::syncFileToHosting($path);
+                        $path = HostingStorageHelper::handleHostingUpload($file, 'settings', $filename);
+                        
+                        if (!$path) {
+                            \Log::error("Hosting upload failed for {$key}");
+                            continue;
+                        }
+                        
+                        \Log::info("Hosting upload successful for {$key}: {$path}");
                     } else {
+                        // Standard Laravel upload for localhost
+                        $path = $file->storeAs('settings', $filename, 'public');
+                        \Log::info("Standard upload for {$key}: {$path}");
+                        
                         // Copy to public/storage for localhost
                         $sourceFile = storage_path('app/public/' . $path);
                         $destFile = public_path('storage/' . $path);
@@ -248,9 +258,6 @@ class SettingsController extends Controller
                         }
                     }
                     
-                    // For hosting environments, also try to copy to hosting paths
-                    $this->copyToHostingPaths($path);
-                    
                     // Delete old file if exists
                     if ($oldFilePath && Storage::disk('public')->exists($oldFilePath)) {
                         try {
@@ -261,7 +268,9 @@ class SettingsController extends Controller
                                 unlink($oldPublicFile);
                             }
                             // Delete from hosting paths if applicable
-                            $this->deleteFromHostingPaths($oldFilePath);
+                            if (HostingStorageHelper::isHostingEnvironment()) {
+                                $this->deleteFromHostingPaths($oldFilePath);
+                            }
                             \Log::info("Deleted old file: {$oldFilePath}");
                         } catch (\Exception $e) {
                             \Log::error("Failed to delete old file {$oldFilePath}: " . $e->getMessage());

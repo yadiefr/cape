@@ -166,6 +166,7 @@ Route::middleware(['auth:web,guru,siswa'])->group(function () {
             Route::get('/', [StorageSyncController::class, 'index'])->name('index');
             Route::post('/sync', [StorageSyncController::class, 'sync'])->name('sync');
             Route::get('/debug', [StorageSyncController::class, 'debug'])->name('debug');
+            Route::post('/test-upload', [StorageSyncController::class, 'testUpload'])->name('test-upload');
         });
         
         // Jadwal Settings Routes

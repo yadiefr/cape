@@ -79,6 +79,87 @@ class HostingStorageHelper
     }
     
     /**
+     * Handle file upload untuk hosting environment
+     */
+    public static function handleHostingUpload($file, $directory = 'settings', $filename = null): ?string
+    {
+        if (!$file || !$file->isValid()) {
+            Log::error("Invalid file for hosting upload");
+            return null;
+        }
+        
+        try {
+            // Generate filename jika tidak disediakan
+            if (!$filename) {
+                $filename = $directory . '_' . time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            }
+            
+            $relativePath = $directory . '/' . $filename;
+            
+            // Path untuk hosting
+            $paths = self::getHostingPaths();
+            
+            // Primary storage path (current Laravel directory)
+            $primaryPath = storage_path('app/public/' . $relativePath);
+            $primaryDir = dirname($primaryPath);
+            
+            // Secondary storage path (project_laravel if different)
+            $secondaryPath = $paths['laravel_storage'] . '/' . $relativePath;
+            $secondaryDir = dirname($secondaryPath);
+            
+            // Public HTML path
+            $publicPath = $paths['public_storage'] . '/' . $relativePath;
+            $publicDir = dirname($publicPath);
+            
+            // Ensure all directories exist
+            foreach ([$primaryDir, $secondaryDir, $publicDir] as $dir) {
+                if (!is_dir($dir)) {
+                    if (!File::makeDirectory($dir, 0755, true)) {
+                        Log::error("Failed to create directory: $dir");
+                        continue;
+                    }
+                    @chmod($dir, 0755);
+                    Log::info("Created directory: $dir");
+                }
+            }
+            
+            // Save file ke primary location
+            $uploadSuccess = false;
+            if ($file->storeAs('public/' . $directory, $filename)) {
+                Log::info("File uploaded to primary storage: $primaryPath");
+                $uploadSuccess = true;
+                @chmod($primaryPath, 0644);
+            }
+            
+            // Copy to secondary location if different from primary
+            if ($uploadSuccess && $secondaryPath !== $primaryPath) {
+                if (file_exists($primaryPath) && copy($primaryPath, $secondaryPath)) {
+                    @chmod($secondaryPath, 0644);
+                    Log::info("File copied to secondary storage: $secondaryPath");
+                } else {
+                    Log::warning("Failed to copy to secondary storage: $secondaryPath");
+                }
+            }
+            
+            // Copy to public HTML
+            if ($uploadSuccess && file_exists($primaryPath)) {
+                if (copy($primaryPath, $publicPath)) {
+                    @chmod($publicPath, 0644);
+                    Log::info("File copied to public HTML: $publicPath");
+                } else {
+                    Log::error("Failed to copy to public HTML: $publicPath");
+                }
+            }
+            
+            return $uploadSuccess ? $relativePath : null;
+            
+        } catch (\Exception $e) {
+            Log::error("Error in hosting upload: " . $e->getMessage());
+            return null;
+        }
+    }
+    
+    /**
      * Sync single file untuk hosting
      */
     public static function syncFileToHosting(string $relativePath): bool

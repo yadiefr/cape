@@ -220,6 +220,52 @@ class StorageSyncController extends Controller
     }
     
     /**
+     * Test upload functionality
+     */
+    public function testUpload(Request $request)
+    {
+        if (!$request->hasFile('test_file')) {
+            return response()->json(['error' => 'No file provided'], 400);
+        }
+        
+        $file = $request->file('test_file');
+        
+        if (!$file->isValid()) {
+            return response()->json(['error' => 'Invalid file'], 400);
+        }
+        
+        try {
+            if (HostingStorageHelper::isHostingEnvironment()) {
+                $path = HostingStorageHelper::handleHostingUpload($file, 'test');
+                
+                if ($path) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'File uploaded successfully to hosting',
+                        'path' => $path,
+                        'file_checks' => [
+                            'primary_exists' => file_exists(storage_path('app/public/' . $path)),
+                            'secondary_exists' => file_exists(base_path('../project_laravel/storage/app/public/' . $path)),
+                            'public_exists' => file_exists(base_path('../public_html/storage/' . $path)),
+                        ]
+                    ]);
+                } else {
+                    return response()->json(['error' => 'Upload failed'], 500);
+                }
+            } else {
+                $path = $file->store('test', 'public');
+                return response()->json([
+                    'success' => true,
+                    'message' => 'File uploaded successfully to localhost',
+                    'path' => $path
+                ]);
+            }
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+    
+    /**
      * Check sync status
      */
     private function checkSyncStatus()

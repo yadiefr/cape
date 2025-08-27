@@ -117,7 +117,31 @@
                         </div>
                     <?php endif; ?>
                     
-                    <div class="mt-4">
+                                            <div class="mt-4">
+                            <h5>Test Upload (Debugging):</h5>
+                            <form id="testUploadForm" enctype="multipart/form-data">
+                                <?php echo csrf_field(); ?>
+                                <div class="form-group">
+                                    <input type="file" name="test_file" id="testFile" class="form-control-file" accept="image/*">
+                                </div>
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="fas fa-upload"></i> Test Upload
+                                </button>
+                            </form>
+                            
+                            <div id="testResults" class="mt-3" style="display: none;">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h6>Test Upload Results</h6>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="testResultsContent"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
                         <h5>Instructions:</h5>
                         <ol>
                             <li><strong>Check Status:</strong> Click "Check Status" to see current sync status</li>
@@ -252,6 +276,56 @@ $(document).ready(function() {
             complete: function() {
                 btn.prop('disabled', false);
                 btn.html(originalText);
+            }
+        });
+    });
+    
+    // Test upload
+    $('#testUploadForm').submit(function(e) {
+        e.preventDefault();
+        
+        var formData = new FormData(this);
+        
+        if (!$('#testFile')[0].files[0]) {
+            alert('Please select a file');
+            return;
+        }
+        
+        $.ajax({
+            url: '<?php echo e(route("admin.storage-sync.test-upload")); ?>',
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
+                var html = '<div class="alert alert-success">';
+                html += '<h6>✅ ' + response.message + '</h6>';
+                html += '<p><strong>Path:</strong> ' + response.path + '</p>';
+                
+                if (response.file_checks) {
+                    html += '<h6>File Existence Checks:</h6>';
+                    html += '<ul>';
+                    for (var check in response.file_checks) {
+                        var status = response.file_checks[check] ? '✅ EXISTS' : '❌ NOT FOUND';
+                        html += '<li><strong>' + check + ':</strong> ' + status + '</li>';
+                    }
+                    html += '</ul>';
+                }
+                
+                html += '</div>';
+                $('#testResultsContent').html(html);
+                $('#testResults').show();
+            },
+            error: function(xhr) {
+                var errorMessage = 'Test upload failed';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMessage = xhr.responseJSON.error;
+                }
+                $('#testResultsContent').html('<div class="alert alert-danger">❌ ' + errorMessage + '</div>');
+                $('#testResults').show();
             }
         });
     });

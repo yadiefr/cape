@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ setting('site_title') }}</title>
     
-    
     <!-- SEO Meta Tags -->
     <meta name="description" content="{{ setting('site_description', setting('nama_sekolah', 'Sekolah') . ' menyediakan pendidikan berkualitas dengan fasilitas modern dan tenaga pengajar profesional') }}">
     <meta name="keywords" content="{{ setting('site_keywords', 'smk, sekolah kejuruan, cikampek, pendidikan, teknologi') }}">

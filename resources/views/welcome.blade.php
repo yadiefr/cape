@@ -446,7 +446,7 @@
                         if ($item->thumbnail && $item->thumbnail->foto) {
                             $thumbnailSrc = $item->thumbnail->foto_url;
                         } elseif ($item->gambar) {
-                            $thumbnailSrc = asset('uploads/' . $item->gambar);
+                            $thumbnailSrc = asset('uploads/galeri/' . $item->gambar);
                         }
                     @endphp
                     @if($thumbnailSrc)

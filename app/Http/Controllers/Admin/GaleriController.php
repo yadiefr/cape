@@ -49,13 +49,13 @@ class GaleriController extends Controller
                 'judul' => 'required|string|max:255',
                 'deskripsi' => 'nullable|string',
                 'kategori' => 'required|string',
-                'foto' => 'required|array|min:1|max:20',
+                'foto' => 'required|array|min:1|max:100',
                 'foto.*' => "required|image|mimes:jpeg,png,jpg,gif,webp|max:{$maxFileSize}",
                 'thumbnail_index' => 'nullable|integer|min:0'
             ], [
                 'foto.required' => 'Minimal upload 1 foto',
                 'foto.min' => 'Minimal upload 1 foto',
-                'foto.max' => 'Maksimal upload 20 foto',
+                'foto.max' => 'Maksimal upload 100 foto',
                 'foto.*.required' => 'Semua file harus berupa gambar',
                 'foto.*.image' => 'File harus berupa gambar',
                 'foto.*.mimes' => 'Format file harus: JPEG, PNG, JPG, GIF, atau WEBP',

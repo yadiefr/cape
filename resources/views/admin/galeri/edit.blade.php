@@ -172,7 +172,7 @@
                             <div>
                                 <p class="text-lg font-medium text-gray-700">Drag & Drop foto atau klik untuk browse</p>
                                 <p class="text-sm text-gray-500">Mendukung: JPG, PNG, GIF, WEBP</p>
-                                <p class="text-sm text-gray-500">Maksimal: {{ $maxFileSize }}MB per file, maksimal 20 foto</p>
+                                <p class="text-sm text-gray-500">Maksimal: {{ $maxFileSize }}MB per file, maksimal 100 foto</p>
                             </div>
                             @if($galeri->foto->count() > 0)
                                 <div class="bg-orange-50 border border-orange-200 rounded-lg p-3 mt-4">
@@ -298,7 +298,15 @@ document.addEventListener('DOMContentLoaded', function() {
         
         console.log('🔄 Processing', files.length, 'files...');
         
-        newFiles = Array.from(files);
+        // Check if adding these files would exceed 100
+        if (files.length + newFiles.length > 100) {
+            alert('Maksimal 100 foto yang dapat diupload sekaligus. Anda telah memilih ' + 
+                  newFiles.length + ' foto dan mencoba menambahkan ' + files.length + ' foto lagi.');
+            return;
+        }
+        
+        // Convert to array and add to existing files
+        newFiles = [...newFiles, ...Array.from(files)].slice(0, 100); // Ensure max 100 files
         
         // Update file counter
         fileCounter.classList.remove('hidden');

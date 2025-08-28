@@ -122,7 +122,7 @@ class GaleriController extends Controller
             foreach ($uploadedFiles as $fileData) {
                 \App\Models\GaleriFoto::create([
                     'galeri_id' => $galeri->id,
-                    'foto' => $fileData['path'], // Use the full path from the helper
+                    'foto' => $fileData['filename'], // Store only the filename
                     'is_thumbnail' => $fileData['is_thumbnail']
                 ]);
             }
@@ -323,7 +323,7 @@ class GaleriController extends Controller
         foreach ($uploadedFiles as $fileData) {
             \App\Models\GaleriFoto::create([
                 'galeri_id' => $galeri->id,
-                'foto' => $fileData['path'], // Use the full path from the helper
+                'foto' => $fileData['filename'], // Store only the filename
                 'is_thumbnail' => $fileData['is_thumbnail']
             ]);
         }
@@ -374,6 +374,7 @@ class GaleriController extends Controller
         $newThumbnailPhoto->update(['is_thumbnail' => true]);
 
         // Update main galeri gambar field
+        // The 'foto' column now stores only the filename, so we can use it directly
         $galeri->update(['gambar' => basename($newThumbnailPhoto->foto)]);
 
         \Log::info('Thumbnail updated successfully:', [

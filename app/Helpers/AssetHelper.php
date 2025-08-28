@@ -8,9 +8,10 @@ if (!function_exists('asset_url')) {
      * or 'uploads' (hosting).
      *
      * @param string|null $path
+     * @param string $directory
      * @return string
      */
-    function asset_url(?string $path): string
+    function asset_url(?string $path, string $directory = 'galeri'): string
     {
         if (empty($path)) {
             // Return a placeholder or default image URL if path is empty
@@ -20,6 +21,12 @@ if (!function_exists('asset_url')) {
         // Determine the base directory based on the environment
         $baseDir = HostingStorageHelper::isHostingEnvironment() ? 'uploads' : 'storage';
 
-        return asset($baseDir . '/' . $path);
+        // Clean up the path to only have the filename
+        $filename = basename($path);
+
+        // Construct the final path
+        $fullPath = "{$baseDir}/{$directory}/{$filename}";
+
+        return asset($fullPath);
     }
 }

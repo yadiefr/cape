@@ -1,37 +1,37 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="<?php echo e(str_replace('_', '-', app()->getLocale())); ?>">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ setting('site_title') }}</title>
+    <title><?php echo e(setting('site_title')); ?></title>
     
     <!-- SEO Meta Tags -->
-    <meta name="description" content="{{ setting('site_description', setting('nama_sekolah', 'Sekolah') . ' menyediakan pendidikan berkualitas dengan fasilitas modern dan tenaga pengajar profesional') }}">
-    <meta name="keywords" content="{{ setting('site_keywords', 'smk, sekolah kejuruan, cikampek, pendidikan, teknologi') }}">
-    <meta name="author" content="{{ setting('nama_sekolah', 'SMK PGRI CIKAMPEK') }}">
+    <meta name="description" content="<?php echo e(setting('site_description', setting('nama_sekolah', 'Sekolah') . ' menyediakan pendidikan berkualitas dengan fasilitas modern dan tenaga pengajar profesional')); ?>">
+    <meta name="keywords" content="<?php echo e(setting('site_keywords', 'smk, sekolah kejuruan, cikampek, pendidikan, teknologi')); ?>">
+    <meta name="author" content="<?php echo e(setting('nama_sekolah', 'SMK PGRI CIKAMPEK')); ?>">
     
     <!-- Open Graph Meta Tags -->
-    <meta property="og:title" content="{{ setting('site_title', 'SMK PGRI CIKAMPEK') }}">
-    <meta property="og:description" content="{{ setting('site_description', 'Pendidikan Berkualitas untuk Masa Depan') }}">
+    <meta property="og:title" content="<?php echo e(setting('site_title', 'SMK PGRI CIKAMPEK')); ?>">
+    <meta property="og:description" content="<?php echo e(setting('site_description', 'Pendidikan Berkualitas untuk Masa Depan')); ?>">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="{{ url('/') }}">
-    @if(setting('logo_sekolah'))
-    <meta property="og:image" content="{{ setting_with_cache_bust('logo_sekolah', null, true) }}">
-    @endif
+    <meta property="og:url" content="<?php echo e(url('/')); ?>">
+    <?php if(setting('logo_sekolah')): ?>
+    <meta property="og:image" content="<?php echo e(setting_with_cache_bust('logo_sekolah', null, true)); ?>">
+    <?php endif; ?>
     
     <!-- Favicon -->
-    @if(setting('site_favicon'))
-    <link rel="icon" type="image/x-icon" href="{{ setting_with_cache_bust('site_favicon', null, true) }}">
-    @else
-    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}">
-    @endif
+    <?php if(setting('site_favicon')): ?>
+    <link rel="icon" type="image/x-icon" href="<?php echo e(setting_with_cache_bust('site_favicon', null, true)); ?>">
+    <?php else: ?>
+    <link rel="icon" type="image/x-icon" href="<?php echo e(asset('favicon.ico')); ?>">
+    <?php endif; ?>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet">
-    <link href="{{ asset('css/style.css') }}" rel="stylesheet">
-    <link href="{{ asset('css/responsive-utilities.css') }}" rel="stylesheet">
+    <link href="<?php echo e(asset('css/style.css')); ?>" rel="stylesheet">
+    <link href="<?php echo e(asset('css/responsive-utilities.css')); ?>" rel="stylesheet">
     
     <!-- Mobile Hero Layout Override -->
     <style>
@@ -92,12 +92,13 @@
     <header>
         <div class="container-custom header-container">
             <a href="#" class="logo">
-                @if(setting('logo_sekolah'))
-                    <img src="{{ setting_with_cache_bust('logo_sekolah', null, true) }}" alt="{{ setting('nama_sekolah', 'SMK PGRI CIKAMPEK') }}" style="height: 40px; width: auto; margin-right: 10px;">
-                @else
+                <?php if(setting('logo_sekolah')): ?>
+                    <img src="<?php echo e(setting_with_cache_bust('logo_sekolah', null, true)); ?>" alt="<?php echo e(setting('nama_sekolah', 'SMK PGRI CIKAMPEK')); ?>" style="height: 40px; width: auto; margin-right: 10px;">
+                <?php else: ?>
                     <i class="fas fa-graduation-cap logo-icon"></i>
-                @endif
-                {{ setting('nama_sekolah', 'SMK PGRI CIKAMPEK') }}
+                <?php endif; ?>
+                <?php echo e(setting('nama_sekolah', 'SMK PGRI CIKAMPEK')); ?>
+
             </a>
             <div class="mobile-menu-btn">
                 <i class="fas fa-bars"></i>
@@ -105,8 +106,8 @@
             <ul class="nav-menu">                
                 <li><a href="#features" class="nav-link">Keunggulan</a></li>
                 <li><a href="#programs" class="nav-link">Program Keahlian</a></li>
-                <li><a href="{{ route('berita.index') }}" class="nav-link">Berita</a></li>
-                <li><a href="{{ route('galeri.index') }}" class="nav-link">Galeri</a></li>                
+                <li><a href="<?php echo e(route('berita.index')); ?>" class="nav-link">Berita</a></li>
+                <li><a href="<?php echo e(route('galeri.index')); ?>" class="nav-link">Galeri</a></li>                
                 <li><a href="/login" class="btn btn-primary">Login</a></li>
                 </li>
             </ul>
@@ -114,7 +115,7 @@
     </header>
     
     <!-- Hero Section -->
-    @php
+    <?php
         $activeBanner = \App\Models\HeroBanner::where('is_active', true)->latest()->first();
         $activeBackground = \App\Models\HeroBackground::where('is_active', true)->latest()->first();
         $heroStyle = '';
@@ -132,36 +133,36 @@
             $heroStyle .= 'will-change: auto !important;';
             $heroStyle .= 'backface-visibility: hidden !important;';
         }
-    @endphp
-    <section class="hero" id="hero-section" style="{{ $heroStyle }}">
-        @if($activeBackground && $activeBackground->image && $activeBackground->opacity < 1.0)
-        <div class="background-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255,255,255,{{ 1 - ($activeBackground->opacity ?? 0.8) }}); z-index: 1;"></div>
-        @endif
+    ?>
+    <section class="hero" id="hero-section" style="<?php echo e($heroStyle); ?>">
+        <?php if($activeBackground && $activeBackground->image && $activeBackground->opacity < 1.0): ?>
+        <div class="background-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(255,255,255,<?php echo e(1 - ($activeBackground->opacity ?? 0.8)); ?>); z-index: 1;"></div>
+        <?php endif; ?>
         
         <div class="container-custom" style="position: relative; z-index: 10;">
             <div class="hero-grid">
-                @if($activeBanner)
+                <?php if($activeBanner): ?>
                     <div class="hero-content" data-aos="fade-right" data-aos-duration="1000">
-                        <h1 class="hero-title">{!! $activeBanner->title !!}</h1>
-                        <p class="hero-description">{{ $activeBanner->description }}</p>
+                        <h1 class="hero-title"><?php echo $activeBanner->title; ?></h1>
+                        <p class="hero-description"><?php echo e($activeBanner->description); ?></p>
                         <div class="hero-cta">
-                            <a href="{{ $activeBanner->button_url }}" class="hero-cta-primary">{{ $activeBanner->button_text }}</a>
+                            <a href="<?php echo e($activeBanner->button_url); ?>" class="hero-cta-primary"><?php echo e($activeBanner->button_text); ?></a>
                         </div>
                     </div>
                     <div class="hero-image" data-aos="fade-left" data-aos-duration="1000" style="background: none !important; filter: none !important;">
-                        <img src="{{ $activeBanner->image_url }}" alt="{{ $activeBanner->title }}" style="filter: none !important; -webkit-filter: none !important; opacity: 1 !important; mix-blend-mode: normal !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background: none !important; box-shadow: none !important; object-fit: cover; width: 100%; height: 100%;">
+                        <img src="<?php echo e($activeBanner->image_url); ?>" alt="<?php echo e($activeBanner->title); ?>" style="filter: none !important; -webkit-filter: none !important; opacity: 1 !important; mix-blend-mode: normal !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background: none !important; box-shadow: none !important; object-fit: cover; width: 100%; height: 100%;">
                     </div>
-                @else
+                <?php else: ?>
                     <div class="hero-content" data-aos="fade-up" data-aos-duration="1000">
-                        <h1 class="hero-title">Selamat Datang di<br><span>{{ setting('nama_sekolah', 'SMK PGRI CIKAMPEK') }}</span></h1>
-                        <p class="hero-description">{{ setting('site_description', 'Mempersiapkan generasi unggul dengan pendidikan berkualitas dan fasilitas modern untuk masa depan yang gemilang.') }}</p>
+                        <h1 class="hero-title">Selamat Datang di<br><span><?php echo e(setting('nama_sekolah', 'SMK PGRI CIKAMPEK')); ?></span></h1>
+                        <p class="hero-description"><?php echo e(setting('site_description', 'Mempersiapkan generasi unggul dengan pendidikan berkualitas dan fasilitas modern untuk masa depan yang gemilang.')); ?></p>
                         <div class="hero-cta">
-                            <a href="{{ route('pendaftar.register') }}" class="hero-cta-primary">
+                            <a href="<?php echo e(route('pendaftar.register')); ?>" class="hero-cta-primary">
                                 <i class="fas fa-user-plus mr-2"></i>Daftar Sekarang
                             </a>
                         </div>
                     </div>
-                @endif
+                <?php endif; ?>
             </div>
         </div>
     </section>
@@ -171,7 +172,7 @@
         <div class="container-custom">
             <div class="section-header" data-aos="fade-up" data-aos-duration="800">
                 <div class="section-subtitle">KEUNGGULAN KAMI</div>
-                <h2 class="section-title">Mengapa Memilih {{ setting('nama_sekolah', 'SMK PGRI CIKAMPEK') }}?</h2>
+                <h2 class="section-title">Mengapa Memilih <?php echo e(setting('nama_sekolah', 'SMK PGRI CIKAMPEK')); ?>?</h2>
                 <p class="section-description">Kami menawarkan pendidikan komprehensif dengan dukungan teknologi terbaru dan kerjasama industri untuk mempersiapkan siswa menghadapi dunia kerja digital.</p>
             </div>
             <div class="features-grid">
@@ -303,24 +304,24 @@
                 <p class="section-description">Pilih jurusan yang sesuai dengan minat dan bakatmu untuk mempersiapkan karir di masa depan.</p>
             </div>
             <div class="programs-grid">
-                @foreach($jurusan as $jur)
-                <div class="program-card" data-aos="fade-up" data-aos-delay="{{ $loop->index * 100 }}">
-                    @if(file_exists(public_path('images/jurusan/'.$jur->kode_jurusan.'.jpg')))
-                        <img src="{{ asset('images/jurusan/'.$jur->kode_jurusan.'.jpg') }}" class="program-image" alt="{{ $jur->nama_jurusan }}">
-                    @else
+                <?php $__currentLoopData = $jurusan; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $jur): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                <div class="program-card" data-aos="fade-up" data-aos-delay="<?php echo e($loop->index * 100); ?>">
+                    <?php if(file_exists(public_path('images/jurusan/'.$jur->kode_jurusan.'.jpg'))): ?>
+                        <img src="<?php echo e(asset('images/jurusan/'.$jur->kode_jurusan.'.jpg')); ?>" class="program-image" alt="<?php echo e($jur->nama_jurusan); ?>">
+                    <?php else: ?>
                         <div class="feature-icon" style="width: 100%; height: 240px; margin-bottom: 0; font-size: 3rem; border-radius: 0;">
                             <i class="fas fa-microchip"></i>
                         </div>
-                    @endif
+                    <?php endif; ?>
                     <div class="program-content">
-                        <h3 class="program-title">{{ $jur->nama_jurusan }}</h3>
-                        <p class="program-description">{{ Str::limit($jur->deskripsi, 120) }}</p>
-                        <a href="{{ url('jurusan/'.$jur->id) }}" class="program-link">
+                        <h3 class="program-title"><?php echo e($jur->nama_jurusan); ?></h3>
+                        <p class="program-description"><?php echo e(Str::limit($jur->deskripsi, 120)); ?></p>
+                        <a href="<?php echo e(url('jurusan/'.$jur->id)); ?>" class="program-link">
                             Pelajari Lebih Lanjut <i class="fas fa-arrow-right"></i>
                         </a>
                     </div>
                 </div>
-                @endforeach
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
             </div>
         </div>
     </section>  
@@ -331,7 +332,7 @@
             <div class="section-header" data-aos="fade-up">
                 <div class="section-subtitle">BERITA & PENGUMUMAN</div>
                 <h2 class="section-title">Informasi Terbaru</h2>
-                <p class="section-description">Dapatkan informasi terkini tentang kegiatan dan pengumuman penting dari {{ setting('nama_sekolah', 'SMK') }}.</p>
+                <p class="section-description">Dapatkan informasi terkini tentang kegiatan dan pengumuman penting dari <?php echo e(setting('nama_sekolah', 'SMK')); ?>.</p>
             </div>
             
             <div class="news-filter" data-aos="fade-up">
@@ -342,61 +343,63 @@
             </div>
             
             <div class="news-grid">
-                @foreach($pengumuman as $p)
-                <div class="news-card" data-aos="fade-up" data-aos-delay="{{ $loop->index * 100 }}">
+                <?php $__currentLoopData = $pengumuman; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $p): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                <div class="news-card" data-aos="fade-up" data-aos-delay="<?php echo e($loop->index * 100); ?>">
                     <div class="news-image">
                         <div class="news-category">Pengumuman</div>
-                        @if($p->lampiran)
-                            <img src="{{ asset('storage/' . $p->lampiran) }}" alt="{{ $p->judul }}" class="w-full h-48 object-cover">
-                        @else
+                        <?php if($p->lampiran): ?>
+                            <img src="<?php echo e(asset('storage/' . $p->lampiran)); ?>" alt="<?php echo e($p->judul); ?>" class="w-full h-48 object-cover">
+                        <?php else: ?>
                             <div class="w-full h-48 bg-gray-200 flex items-center justify-center text-gray-500">
                                 <i class="fas fa-image fa-3x"></i>
                             </div>
-                        @endif
+                        <?php endif; ?>
                     </div>
                     <div class="news-content">
                         <div class="news-date">
-                            <i class="fas fa-calendar-alt"></i> {{ $p->tanggal_mulai->format('d M Y') }}
+                            <i class="fas fa-calendar-alt"></i> <?php echo e($p->tanggal_mulai->format('d M Y')); ?>
+
                         </div>
-                        <h3 class="news-title">{{ $p->judul }}</h3>
-                        <p class="news-description">{{ Str::limit($p->isi, 100) }}</p>
-                        <a href="{{ url('pengumuman/'.$p->id) }}" class="news-link">
+                        <h3 class="news-title"><?php echo e($p->judul); ?></h3>
+                        <p class="news-description"><?php echo e(Str::limit($p->isi, 100)); ?></p>
+                        <a href="<?php echo e(url('pengumuman/'.$p->id)); ?>" class="news-link">
                             Baca Selengkapnya <i class="fas fa-arrow-right"></i>
                         </a>
                     </div>
                 </div>
-                @endforeach
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
 
-                @foreach($berita as $b)
-                <div class="news-card" data-aos="fade-up" data-aos-delay="{{ $loop->index * 100 }}">
+                <?php $__currentLoopData = $berita; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $b): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                <div class="news-card" data-aos="fade-up" data-aos-delay="<?php echo e($loop->index * 100); ?>">
                     <div class="news-image">
                         <div class="news-category">Berita</div>
-                        @if($b->foto)
-                            <img src="{{ asset('storage/' . $b->foto) }}" alt="{{ $b->judul }}" class="w-full h-48 object-cover">
-                        @else
+                        <?php if($b->foto): ?>
+                            <img src="<?php echo e(asset('storage/' . $b->foto)); ?>" alt="<?php echo e($b->judul); ?>" class="w-full h-48 object-cover">
+                        <?php else: ?>
                             <div class="w-full h-48 bg-gray-200 flex items-center justify-center text-gray-500">
                                 <i class="fas fa-image fa-3x"></i>
                             </div>
-                        @endif
+                        <?php endif; ?>
                     </div>
                     <div class="news-content">
                         <div class="news-date">
-                            <i class="fas fa-calendar-alt"></i> {{ $b->created_at->format('d M Y') }}
+                            <i class="fas fa-calendar-alt"></i> <?php echo e($b->created_at->format('d M Y')); ?>
+
                         </div>
-                        <h3 class="news-title">{{ $b->judul }}</h3>
-                        <p class="news-description">{{ Str::limit($b->isi, 100) }}</p>
-                        <a href="{{ url('berita/'.$b->id) }}" class="news-link">
+                        <h3 class="news-title"><?php echo e($b->judul); ?></h3>
+                        <p class="news-description"><?php echo e(Str::limit($b->isi, 100)); ?></p>
+                        <a href="<?php echo e(url('berita/'.$b->id)); ?>" class="news-link">
                             Baca Selengkapnya <i class="fas fa-arrow-right"></i>
                         </a>
                     </div>
                 </div>
-                @endforeach
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
             </div>
             
             <!-- View All Berita Button -->
-            @if($berita && $berita->count() > 0)
+            <?php if($berita && $berita->count() > 0): ?>
             <div style="text-align: center; margin-top: 4rem; margin-bottom: 2rem;">
-                <a href="{{ route('berita.index') }}" 
+                <a href="<?php echo e(route('berita.index')); ?>" 
                    style="display: inline-flex; align-items: center; padding: 1rem 2rem; background: linear-gradient(135deg, #3b82f6); color: white !important; text-decoration: none; border-radius: 1rem; box-shadow: 0 10px 25px rgba(0,0,0,0.2); transition: all 0.3s ease; font-weight: 600; font-size: 1.1rem;">
                     <div style="background: rgba(255,255,255,0.2); border-radius: 50%; padding: 0.75rem; margin-right: 1rem;">
                         <i class="fas fa-newspaper" style="color: white; font-size: 1.2rem;"></i>
@@ -416,7 +419,7 @@
                     Dapatkan informasi terkini tentang kegiatan dan pengumuman penting dari sekolah
                 </p>
             </div>
-            @endif
+            <?php endif; ?>
         </div>
     </section>
 
@@ -426,7 +429,7 @@
             <div class="section-header" data-aos="fade-up">
                 <div class="section-subtitle">GALERI KAMI</div>
                 <h2 class="section-title">Momen & Fasilitas</h2>
-                <p class="section-description">Lihat koleksi foto kegiatan, fasilitas, dan kehidupan siswa di {{ setting('nama_sekolah', 'SMK') }}.</p>
+                <p class="section-description">Lihat koleksi foto kegiatan, fasilitas, dan kehidupan siswa di <?php echo e(setting('nama_sekolah', 'SMK')); ?>.</p>
             </div>
             
             <div class="gallery-filter" data-aos="fade-up">
@@ -439,47 +442,47 @@
             
             <!-- Gallery Preview Grid (Only show first 8 items) -->
             <div class="gallery-grid" data-aos="fade-up">
-                @forelse($galeri->take(8) as $item)
-                <div class="gallery-item" data-category="{{ $item->kategori }}">
-                    @if($item->gambar)
-                        <img src="{{ asset_url($item->gambar) }}" alt="{{ $item->judul }}">
-                    @else
+                <?php $__empty_1 = true; $__currentLoopData = $galeri->take(8); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $item): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                <div class="gallery-item" data-category="<?php echo e($item->kategori); ?>">
+                    <?php if($item->gambar): ?>
+                        <img src="<?php echo e(asset_url($item->gambar)); ?>" alt="<?php echo e($item->judul); ?>">
+                    <?php else: ?>
                         <div class="no-image-placeholder">
                             <i class="fas fa-images"></i>
                             <span>Tidak ada foto</span>
                         </div>
-                    @endif
+                    <?php endif; ?>
                     <div class="gallery-overlay">
                         <div class="gallery-info">
-                            <h3>{{ $item->judul }}</h3>
-                            <p>{{ Str::limit($item->deskripsi, 60) }}</p>
+                            <h3><?php echo e($item->judul); ?></h3>
+                            <p><?php echo e(Str::limit($item->deskripsi, 60)); ?></p>
                             <div class="gallery-actions">
-                                <a href="{{ route('galeri.show', $item->id) }}" class="gallery-view-btn" title="Lihat galeri lengkap">
+                                <a href="<?php echo e(route('galeri.show', $item->id)); ?>" class="gallery-view-btn" title="Lihat galeri lengkap">
                                     <i class="fas fa-images"></i>
                                 </a>
                             </div>
                         </div>
                     </div>
                 </div>
-                @empty
+                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                 <div class="col-span-4 text-center py-16 text-gray-400">
                     <i class="fas fa-images text-6xl mb-4"></i>
                     <div class="text-lg">Belum ada foto di galeri</div>
                 </div>
-                @endforelse
+                <?php endif; ?>
             </div>
             
             <!-- View All Gallery Button -->
-            @if($galeri && $galeri->count() > 0)
+            <?php if($galeri && $galeri->count() > 0): ?>
             <div style="text-align: center; margin-top: 4rem; margin-bottom: 2rem;">
-                <a href="{{ route('galeri.index') }}" 
+                <a href="<?php echo e(route('galeri.index')); ?>" 
                    style="display: inline-flex; align-items: center; padding: 1rem 2rem; background: linear-gradient(135deg, #3b82f6); color: white !important; text-decoration: none; border-radius: 1rem; box-shadow: 0 10px 25px rgba(0,0,0,0.2); transition: all 0.3s ease; font-weight: 600; font-size: 1.1rem;">
                     <div style="background: rgba(255,255,255,0.2); border-radius: 50%; padding: 0.75rem; margin-right: 1rem;">
                         <i class="fas fa-images" style="color: white; font-size: 1.2rem;"></i>
                     </div>
                     <div style="text-align: left;">
                         <div style="font-weight: bold; font-size: 1.2rem; color: white;">Lihat Semua Galeri</div>
-                        <div style="font-size: 0.9rem; opacity: 0.9; color: white;">{{ $galeri->count() }} koleksi foto tersedia</div>
+                        <div style="font-size: 0.9rem; opacity: 0.9; color: white;"><?php echo e($galeri->count()); ?> koleksi foto tersedia</div>
                     </div>
                     <div style="margin-left: 1.5rem; color: white;">
                         <i class="fas fa-arrow-right" style="font-size: 1.1rem;"></i>
@@ -492,7 +495,7 @@
                     Jelajahi koleksi lengkap foto kegiatan, fasilitas, dan momen berharga di sekolah kami
                 </p>
             </div>
-            @endif
+            <?php endif; ?>
         </div>
     </section>
 
@@ -531,9 +534,9 @@
                         </div>
                         <h4 style="color: white; margin-bottom: 1rem; font-size: clamp(1.1rem, 2.5vw, 1.25rem);">Kontak Kami</h4>
                         <div style="color: rgba(255,255,255,0.9); line-height: 1.6; font-size: clamp(0.85rem, 1.8vw, 0.95rem); flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
-                            <div style="margin-bottom: 0.5rem;"><i class="fas fa-phone mr-2"></i>{{ setting('telepon_sekolah', '(0264) 123456') }}</div>
-                            <div style="margin-bottom: 0.5rem; word-break: break-all;"><i class="fas fa-envelope mr-2"></i>{{ setting('email_sekolah', 'info@smkpgricikampek.sch.id') }}</div>
-                            <div><i class="fab fa-whatsapp mr-2"></i>{{ setting('whatsapp_number', '08123456789') }}</div>
+                            <div style="margin-bottom: 0.5rem;"><i class="fas fa-phone mr-2"></i><?php echo e(setting('telepon_sekolah', '(0264) 123456')); ?></div>
+                            <div style="margin-bottom: 0.5rem; word-break: break-all;"><i class="fas fa-envelope mr-2"></i><?php echo e(setting('email_sekolah', 'info@smkpgricikampek.sch.id')); ?></div>
+                            <div><i class="fab fa-whatsapp mr-2"></i><?php echo e(setting('whatsapp_number', '08123456789')); ?></div>
                         </div>
                     </div>
                 </div>
@@ -545,7 +548,7 @@
                         </div>
                         <h4 style="color: white; margin-bottom: 1rem; font-size: clamp(1.1rem, 2.5vw, 1.25rem);">Lokasi</h4>
                         <div style="color: rgba(255,255,255,0.9); line-height: 1.6; font-size: clamp(0.85rem, 1.8vw, 0.95rem); flex-grow: 1; display: flex; flex-direction: column; justify-content: center;">
-                            <div style="margin-bottom: 1rem;">{{ setting('alamat_sekolah', 'Jl. Raya Cikampek No. 123, Cikampek, Karawang, Jawa Barat') }}</div>
+                            <div style="margin-bottom: 1rem;"><?php echo e(setting('alamat_sekolah', 'Jl. Raya Cikampek No. 123, Cikampek, Karawang, Jawa Barat')); ?></div>
                             <a href="https://maps.google.com" target="_blank" style="color: #ffd700; text-decoration: none; display: inline-block; font-size: clamp(0.8rem, 1.6vw, 0.9rem);">
                                 <i class="fas fa-external-link-alt mr-1"></i>Lihat di Maps
                             </a>
@@ -564,7 +567,7 @@
                             <div>Gelombang 1: Maret - Mei</div>
                             <div>Gelombang 2: Juni - Juli</div>
                         </div>
-                        <a href="{{ route('pendaftar.register') }}" style="background: #ffd700; color: #333; padding: clamp(0.5rem, 2vw, 0.75rem) clamp(1rem, 3vw, 1.5rem); border-radius: 25px; text-decoration: none; font-weight: 600; display: inline-block; font-size: clamp(0.85rem, 1.8vw, 0.95rem);">
+                        <a href="<?php echo e(route('pendaftar.register')); ?>" style="background: #ffd700; color: #333; padding: clamp(0.5rem, 2vw, 0.75rem) clamp(1rem, 3vw, 1.5rem); border-radius: 25px; text-decoration: none; font-weight: 600; display: inline-block; font-size: clamp(0.85rem, 1.8vw, 0.95rem);">
                             Daftar Sekarang
                         </a>
                     </div>
@@ -579,65 +582,66 @@
             <div class="footer-main" data-aos="fade-up">
                 <div class="footer-info">
                     <a href="#" class="footer-logo">
-                        @if(setting('logo_sekolah'))
-                            <img src="{{ setting_with_cache_bust('logo_sekolah', null, true) }}" alt="{{ setting('nama_sekolah', 'SMK PGRI CIKAMPEK') }}" style="height: 40px; width: auto; margin-right: 10px;">
-                        @endif
-                        {{ setting('nama_sekolah', 'SMK PGRI CIKAMPEK') }}
+                        <?php if(setting('logo_sekolah')): ?>
+                            <img src="<?php echo e(setting_with_cache_bust('logo_sekolah', null, true)); ?>" alt="<?php echo e(setting('nama_sekolah', 'SMK PGRI CIKAMPEK')); ?>" style="height: 40px; width: auto; margin-right: 10px;">
+                        <?php endif; ?>
+                        <?php echo e(setting('nama_sekolah', 'SMK PGRI CIKAMPEK')); ?>
+
                     </a>
-                    <p class="footer-description">{{ setting('site_description', 'Mempersiapkan generasi muda untuk menjadi talenta digital berkualitas yang siap menghadapi tantangan industri teknologi masa depan.') }}</p>
+                    <p class="footer-description"><?php echo e(setting('site_description', 'Mempersiapkan generasi muda untuk menjadi talenta digital berkualitas yang siap menghadapi tantangan industri teknologi masa depan.')); ?></p>
                     <div class="footer-contact">
-                        @if(setting('alamat_sekolah'))
+                        <?php if(setting('alamat_sekolah')): ?>
                         <div class="contact-item">
                             <i class="fas fa-map-marker-alt"></i>
-                            <span>{{ setting('alamat_sekolah') }}</span>
+                            <span><?php echo e(setting('alamat_sekolah')); ?></span>
                         </div>
-                        @endif
+                        <?php endif; ?>
                         
-                        @if(setting('telepon_sekolah'))
+                        <?php if(setting('telepon_sekolah')): ?>
                         <div class="contact-item">
                             <i class="fas fa-phone-alt"></i>
-                            <span>{{ setting('telepon_sekolah') }}</span>
+                            <span><?php echo e(setting('telepon_sekolah')); ?></span>
                         </div>
-                        @endif
+                        <?php endif; ?>
                         
-                        @if(setting('email_sekolah'))
+                        <?php if(setting('email_sekolah')): ?>
                         <div class="contact-item">
                             <i class="fas fa-envelope"></i>
-                            <span>{{ setting('email_sekolah') }}</span>
+                            <span><?php echo e(setting('email_sekolah')); ?></span>
                         </div>
-                        @endif
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
             
             <div class="footer-bottom">
                 <div class="footer-social" data-aos="fade-up" data-aos-delay="100">
-                    @if(setting('facebook_url'))
-                    <a href="{{ setting('facebook_url') }}" class="social-link" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
-                    @endif
+                    <?php if(setting('facebook_url')): ?>
+                    <a href="<?php echo e(setting('facebook_url')); ?>" class="social-link" target="_blank" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                    <?php endif; ?>
                     
-                    @if(setting('instagram_url'))
-                    <a href="{{ setting('instagram_url') }}" class="social-link" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                    @endif
+                    <?php if(setting('instagram_url')): ?>
+                    <a href="<?php echo e(setting('instagram_url')); ?>" class="social-link" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <?php endif; ?>
                     
-                    @if(setting('youtube_url'))
-                    <a href="{{ setting('youtube_url') }}" class="social-link" target="_blank" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
-                    @endif
+                    <?php if(setting('youtube_url')): ?>
+                    <a href="<?php echo e(setting('youtube_url')); ?>" class="social-link" target="_blank" aria-label="YouTube"><i class="fab fa-youtube"></i></a>
+                    <?php endif; ?>
                     
-                    @if(setting('whatsapp_number'))
-                    <a href="https://wa.me/{{ setting('whatsapp_number') }}" class="social-link" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
-                    @endif
+                    <?php if(setting('whatsapp_number')): ?>
+                    <a href="https://wa.me/<?php echo e(setting('whatsapp_number')); ?>" class="social-link" target="_blank" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
+                    <?php endif; ?>
                 </div>
                 
                 <div class="footer-copyright" data-aos="fade-up" data-aos-delay="200">
-                    &copy; {{ date('Y') }} {{ setting('nama_sekolah', 'SMK PGRI CIKAMPEK') }}. Semua hak dilindungi.
+                    &copy; <?php echo e(date('Y')); ?> <?php echo e(setting('nama_sekolah', 'SMK PGRI CIKAMPEK')); ?>. Semua hak dilindungi.
                 </div>
             </div>
         </div>
     </footer>
 
     <!-- WhatsApp Floating Button -->
-    <a href="https://wa.me/{{ setting('whatsapp_number', '08123456789') }}?text={{ urlencode('Halo, saya ingin bertanya tentang ' . setting('nama_sekolah', 'sekolah')) }}"
+    <a href="https://wa.me/<?php echo e(setting('whatsapp_number', '08123456789')); ?>?text=<?php echo e(urlencode('Halo, saya ingin bertanya tentang ' . setting('nama_sekolah', 'sekolah'))); ?>"
        class="whatsapp-float"
        target="_blank"
        aria-label="Chat WhatsApp"
@@ -656,7 +660,7 @@
                     <i class="fas fa-envelope-open-text"></i>
                 </div>
                 <h3>Dapatkan Informasi Terbaru</h3>
-                <p>Berlangganan newsletter kami untuk mendapatkan informasi terbaru tentang program, acara, dan berita {{ setting('nama_sekolah', 'SMK PGRI CIKAMPEK') }}.</p>
+                <p>Berlangganan newsletter kami untuk mendapatkan informasi terbaru tentang program, acara, dan berita <?php echo e(setting('nama_sekolah', 'SMK PGRI CIKAMPEK')); ?>.</p>
             </div>
             <form class="newsletter-form" id="newsletterForm">
                 <div class="form-group">
@@ -700,7 +704,7 @@
 
     <script>
         document.getElementById('start-chat').addEventListener('click', function() {
-            window.open('https://wa.me/{{ setting("whatsapp_number", "08123456789") }}?text={{ urlencode("Halo saya ingin bertanya tentang " . setting("nama_sekolah", "sekolah")) }}', '_blank');
+            window.open('https://wa.me/<?php echo e(setting("whatsapp_number", "08123456789")); ?>?text=<?php echo e(urlencode("Halo saya ingin bertanya tentang " . setting("nama_sekolah", "sekolah"))); ?>', '_blank');
         });
         
         // Pastikan gambar hero tidak memiliki filter
@@ -1004,9 +1008,9 @@
             }
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
-    <script src="{{ asset('js/script-new.js') }}"></script>
-    <script src="{{ asset('js/newsletter.js') }}"></script>
-    <script src="{{ asset('js/welcome-scripts.js') }}"></script>
+    <script src="<?php echo e(asset('js/script-new.js')); ?>"></script>
+    <script src="<?php echo e(asset('js/newsletter.js')); ?>"></script>
+    <script src="<?php echo e(asset('js/welcome-scripts.js')); ?>"></script>
 
 </body>
-</html>
+</html><?php /**PATH C:\wamp64\www\website-smk3\resources\views/welcome.blade.php ENDPATH**/ ?>

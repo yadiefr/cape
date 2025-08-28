@@ -67,7 +67,7 @@
                     <div class="group bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
                         <!-- Image Container -->
                         <div class="relative aspect-square overflow-hidden">
-                            <img src="<?php echo e(asset('uploads/galeri/' . $item->gambar)); ?>" 
+                            <img src="<?php echo e(asset_url($item->gambar)); ?>" 
                                  alt="<?php echo e($item->judul); ?>"
                                  class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
                             

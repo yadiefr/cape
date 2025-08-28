@@ -65,7 +65,7 @@
                     <div class="group bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-2">
                         <!-- Image Container -->
                         <div class="relative aspect-square overflow-hidden">
-                            <img src="{{ asset('uploads/galeri/' . $item->gambar) }}" 
+                            <img src="{{ asset_url($item->gambar) }}" 
                                  alt="{{ $item->judul }}"
                                  class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
                             

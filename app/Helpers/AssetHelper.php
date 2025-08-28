@@ -19,7 +19,9 @@ if (!function_exists('asset_url')) {
         }
 
         // Determine the base directory based on the environment
-        $baseDir = HostingStorageHelper::isHostingEnvironment() ? 'uploads' : 'storage';
+        // On local, use 'storage' which symlinks to 'storage/app/public'.
+        // On hosting, public files are in 'uploads'.
+        $baseDir = config('app.env') === 'local' ? 'storage' : 'uploads';
 
         // Clean up the path to only have the filename
         $filename = basename($path);

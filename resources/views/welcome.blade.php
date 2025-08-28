@@ -442,12 +442,7 @@
                 @forelse($galeri->take(8) as $item)
                 <div class="gallery-item" data-category="{{ $item->kategori }}">
                     @php
-                        $thumbnailSrc = '';
-                        if ($item->thumbnail && $item->thumbnail->foto) {
-                            $thumbnailSrc = $item->thumbnail->foto_url;
-                        } elseif ($item->gambar) {
-                            $thumbnailSrc = asset('uploads/galeri/' . $item->gambar);
-                        }
+                        $thumbnailSrc = asset_url($item->gambar);
                     @endphp
                     @if($thumbnailSrc)
                         <img src="{{ $thumbnailSrc }}" alt="{{ $item->judul }}">

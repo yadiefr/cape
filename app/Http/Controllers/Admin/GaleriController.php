@@ -374,7 +374,7 @@ class GaleriController extends Controller
         $newThumbnailPhoto->update(['is_thumbnail' => true]);
 
         // Update main galeri gambar field
-        $galeri->update(['gambar' => $newThumbnailPhoto->foto]);
+        $galeri->update(['gambar' => basename($newThumbnailPhoto->foto)]);
 
         \Log::info('Thumbnail updated successfully:', [
             'galeri_id' => $galeri->id,

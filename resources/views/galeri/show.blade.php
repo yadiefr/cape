@@ -146,7 +146,12 @@
 
 @push('scripts')
 <script>
-    const photos = @json($galeri->foto->map(function($foto) { return $foto->foto; }));
+    const photos = @json($galeri->foto->map(function($foto) { 
+        return [
+            'filename' => $foto->foto,
+            'url' => asset_url($foto->foto)
+        ];
+    }));
     let currentPhotoIndex = 0;
     
     function openPhotoModal(index) {
@@ -172,7 +177,7 @@
         const modalPhoto = document.getElementById('modalPhoto');
         const photoCounter = document.getElementById('photoCounter');
         
-        modalPhoto.src = `/storage/${photos[currentPhotoIndex]}`;
+        modalPhoto.src = photos[currentPhotoIndex].url;
         modalPhoto.alt = `Foto ${currentPhotoIndex + 1}`;
         photoCounter.textContent = `${currentPhotoIndex + 1} dari ${photos.length}`;
     }
@@ -189,7 +194,7 @@
     
     function downloadPhoto() {
         const link = document.createElement('a');
-        link.href = `/storage/${photos[currentPhotoIndex]}`;
+        link.href = photos[currentPhotoIndex].url;
         link.download = `foto_${currentPhotoIndex + 1}.jpg`;
         link.click();
     }

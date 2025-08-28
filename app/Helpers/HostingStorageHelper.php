@@ -394,4 +394,72 @@ class HostingStorageHelper
         
         return $status;
     }
+
+    /**
+     * Universal file deletion handler
+     */
+    public static function deleteFile(string $relativePath): bool
+    {
+        if (empty($relativePath)) {
+            Log::warning("Attempted to delete an empty file path.");
+            return false;
+        }
+
+        try {
+            $deletedAny = false;
+
+            if (self::isHostingEnvironment()) {
+                // Hosting environment
+                $paths = self::getHostingPaths();
+                $currentStoragePath = $paths['current_storage'] . '/' . $relativePath;
+                $publicStoragePath = $paths['public_storage'] . '/' . $relativePath;
+
+                if (file_exists($currentStoragePath)) {
+                    if (unlink($currentStoragePath)) {
+                        Log::info("Deleted file from current storage: $currentStoragePath");
+                        $deletedAny = true;
+                    } else {
+                        Log::error("Failed to delete file from current storage: $currentStoragePath");
+                    }
+                }
+
+                if (file_exists($publicStoragePath)) {
+                    if (unlink($publicStoragePath)) {
+                        Log::info("Deleted file from public storage: $publicStoragePath");
+                        $deletedAny = true;
+                    } else {
+                        Log::error("Failed to delete file from public storage: $publicStoragePath");
+                    }
+                }
+            } else {
+                // Localhost environment
+                $laravelStoragePath = storage_path('app/public/' . $relativePath);
+                $publicStoragePath = public_path('storage/' . $relativePath);
+
+                if (file_exists($laravelStoragePath)) {
+                    if (unlink($laravelStoragePath)) {
+                        Log::info("Deleted file from Laravel storage: $laravelStoragePath");
+                        $deletedAny = true;
+                    } else {
+                        Log::error("Failed to delete file from Laravel storage: $laravelStoragePath");
+                    }
+                }
+
+                if (file_exists($publicStoragePath)) {
+                    if (unlink($publicStoragePath)) {
+                        Log::info("Deleted file from public/storage: $publicStoragePath");
+                        $deletedAny = true;
+                    } else {
+                        Log::error("Failed to delete file from public/storage: $publicStoragePath");
+                    }
+                }
+            }
+
+            return $deletedAny;
+
+        } catch (\Exception $e) {
+            Log::error("Error deleting file {$relativePath}: " . $e->getMessage());
+            return false;
+        }
+    }
 }

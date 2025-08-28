@@ -38,7 +38,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
         @forelse($galeri as $item)
         <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden group relative">
-            <img src="{{ $item->gambar ? asset('uploads/galeri/' . $item->gambar) : 'https://via.placeholder.com/400x300?text=No+Image' }}" alt="{{ $item->judul }}" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-200">
+            <img src="{{ $item->gambar ? asset('storage/' . $item->gambar) : 'https://via.placeholder.com/400x300?text=No+Image' }}" alt="{{ $item->judul }}" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-200">
             <div class="p-4">
                 <h3 class="font-semibold text-gray-800 text-base mb-1">{{ $item->judul }}</h3>
                 <p class="text-gray-500 text-sm mb-2">{{ $item->deskripsi }}</p>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Galeri;
 use Illuminate\Http\Request;
+use App\Helpers\HostingStorageHelper;
 
 class GaleriController extends Controller
 {
@@ -61,12 +62,6 @@ class GaleriController extends Controller
                 'foto.*.max' => "Ukuran file maksimal {$this->getUploadMaxFilesize()}MB"
             ]);
 
-            // Create upload directory if not exists
-            $uploadPath = public_path('uploads/galeri');
-            if (!file_exists($uploadPath)) {
-                mkdir($uploadPath, 0755, true);
-            }
-
             // Process files
             $thumbnailIndex = (int) ($request->thumbnail_index ?? 0);
             $uploadedFiles = [];
@@ -79,21 +74,24 @@ class GaleriController extends Controller
             ]);
 
             foreach ($request->file('foto') as $index => $file) {
-                // Generate unique filename
-                $filename = time() . '_' . $index . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-                
-                // Move file
-                $file->move($uploadPath, $filename);
-                
-                $isThumb = ($index === $thumbnailIndex);
-                
-                $uploadedFiles[] = [
-                    'filename' => $filename,
-                    'is_thumbnail' => $isThumb
-                ];
-                
-                if ($isThumb) {
-                    $thumbnailFile = $filename;
+                $uploadedPath = HostingStorageHelper::uploadFile($file, 'galeri');
+
+                if ($uploadedPath) {
+                    $isThumb = ($index === $thumbnailIndex);
+                    $filename = basename($uploadedPath);
+
+                    $uploadedFiles[] = [
+                        'path' => $uploadedPath,
+                        'filename' => $filename,
+                        'is_thumbnail' => $isThumb
+                    ];
+
+                    if ($isThumb) {
+                        $thumbnailFile = $filename;
+                    }
+                } else {
+                    
+                    Log::warning('File upload failed during galeri creation', ['original_name' => $file->getClientOriginalName()]);
                 }
                 
                 \Log::info("File {$index} processed:", [
@@ -108,6 +106,10 @@ class GaleriController extends Controller
                 $uploadedFiles[0]['is_thumbnail'] = true;
             }
 
+            if (empty($uploadedFiles)) {
+                return redirect()->back()->withInput()->with('error', 'Tidak ada foto yang berhasil diupload. Periksa log untuk detail.');
+            }
+
             // Create galeri record
             $galeri = Galeri::create([
                 'judul' => $request->judul,
@@ -120,7 +122,7 @@ class GaleriController extends Controller
             foreach ($uploadedFiles as $fileData) {
                 \App\Models\GaleriFoto::create([
                     'galeri_id' => $galeri->id,
-                    'foto' => $fileData['filename'],
+                    'foto' => $fileData['path'], // Use the full path from the helper
                     'is_thumbnail' => $fileData['is_thumbnail']
                 ]);
             }
@@ -270,17 +272,11 @@ class GaleriController extends Controller
             'thumbnail_index' => $thumbnailIndex
         ]);
 
-        // Create upload directory if not exists
-        $uploadPath = public_path('uploads/galeri');
-        if (!file_exists($uploadPath)) {
-            mkdir($uploadPath, 0755, true);
-        }
-
         // Delete existing photos and files
         $existingPhotos = $galeri->foto;
         foreach ($existingPhotos as $photo) {
-            if ($photo->foto && file_exists(public_path('uploads/galeri/' . $photo->foto))) {
-                unlink(public_path('uploads/galeri/' . $photo->foto));
+            if ($photo->foto) {
+                HostingStorageHelper::deleteFile($photo->foto);
                 \Log::info('Deleted existing photo file:', ['file' => $photo->foto]);
             }
             $photo->delete();
@@ -291,21 +287,23 @@ class GaleriController extends Controller
         $thumbnailFile = null;
 
         foreach ($photos as $index => $photo) {
-            // Generate unique filename
-            $filename = time() . '_' . $index . '_' . uniqid() . '.' . $photo->getClientOriginalExtension();
-            
-            // Move file
-            $photo->move($uploadPath, $filename);
-            
-            $isThumb = ($index === $thumbnailIndex);
-            
-            $uploadedFiles[] = [
-                'filename' => $filename,
-                'is_thumbnail' => $isThumb
-            ];
-            
-            if ($isThumb) {
-                $thumbnailFile = $filename;
+            $uploadedPath = HostingStorageHelper::uploadFile($photo, 'galeri');
+
+            if ($uploadedPath) {
+                $isThumb = ($index === $thumbnailIndex);
+                $filename = basename($uploadedPath);
+
+                $uploadedFiles[] = [
+                    'path' => $uploadedPath,
+                    'filename' => $filename,
+                    'is_thumbnail' => $isThumb
+                ];
+
+                if ($isThumb) {
+                    $thumbnailFile = $filename;
+                }
+            } else {
+                Log::warning('File upload failed during galeri update', ['original_name' => $photo->getClientOriginalName()]);
             }
             
             \Log::info("New photo processed:", [
@@ -325,7 +323,7 @@ class GaleriController extends Controller
         foreach ($uploadedFiles as $fileData) {
             \App\Models\GaleriFoto::create([
                 'galeri_id' => $galeri->id,
-                'foto' => $fileData['filename'],
+                'foto' => $fileData['path'], // Use the full path from the helper
                 'is_thumbnail' => $fileData['is_thumbnail']
             ]);
         }
@@ -392,17 +390,14 @@ class GaleriController extends Controller
     {
         $galeri = Galeri::with('foto')->findOrFail($id);
 
-        // Delete all related photos from storage
+        // Delete all related photos from storage using the helper
         foreach ($galeri->foto as $photo) {
-            if ($photo->foto && file_exists(public_path('uploads/galeri/'.$photo->foto))) {
-                unlink(public_path('uploads/galeri/'.$photo->foto));
+            if ($photo->foto) {
+                HostingStorageHelper::deleteFile($photo->foto);
             }
         }
 
-        // Delete main gambar if exists and different from photos
-        if ($galeri->gambar && file_exists(public_path('uploads/galeri/'.$galeri->gambar))) {
-            unlink(public_path('uploads/galeri/'.$galeri->gambar));
-        }
+        // The main 'gambar' is one of the 'foto', so it's already deleted.
 
         // Delete galeri record (will cascade delete photos due to foreign key)
         $galeri->delete();

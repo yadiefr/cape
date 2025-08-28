@@ -50,7 +50,7 @@
                 @foreach($galeri->foto as $foto)
                     <div class="group relative aspect-square overflow-hidden rounded-lg cursor-pointer bg-white shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
                          onclick="openPhotoModal({{ $loop->index }})">
-                        <img src="{{ asset('storage/' . $foto->foto) }}" 
+                        <img src="{{ asset_url($foto->foto) }}" 
                              alt="Foto {{ $loop->iteration }}"
                              class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                              loading="lazy">

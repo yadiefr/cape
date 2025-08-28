@@ -43,6 +43,7 @@ class ComposerStaticInit9fdb036d7e7e5101d04433507f7955c2
         'ec07570ca5a812141189b1fa81503674' => __DIR__ . '/..' . '/phpunit/phpunit/src/Framework/Assert/Functions.php',
         '320163ac6b93aebe3dc25b60a0533d56' => __DIR__ . '/..' . '/spatie/laravel-ignition/src/helpers.php',
         '8ae28d5269ad171fd8156edb3858d43d' => __DIR__ . '/../..' . '/app/Helpers/SettingsHelper.php',
+        '88c11930897898bae2533564a6199849' => __DIR__ . '/../..' . '/app/Helpers/AssetHelper.php',
     );
 
     public static $prefixLengthsPsr4 = array (
@@ -667,6 +668,7 @@ class ComposerStaticInit9fdb036d7e7e5101d04433507f7955c2
         'App\\Exports\\SiswaAbsensiExport' => __DIR__ . '/../..' . '/app/Exports/SiswaAbsensiExport.php',
         'App\\Exports\\TemplateExport' => __DIR__ . '/../..' . '/app/Exports/TemplateExport.php',
         'App\\Exports\\TemplateSiswaExport' => __DIR__ . '/../..' . '/app/Exports/TemplateSiswaExport.php',
+        'App\\Helpers\\HostingStorageHelper' => __DIR__ . '/../..' . '/app/Helpers/HostingStorageHelper.php',
         'App\\Http\\Controllers\\AbsensiController' => __DIR__ . '/../..' . '/app/Http/Controllers/AbsensiController.php',
         'App\\Http\\Controllers\\AdminController' => __DIR__ . '/../..' . '/app/Http/Controllers/AdminController.php',
         'App\\Http\\Controllers\\Admin\\AbsensiController' => __DIR__ . '/../..' . '/app/Http/Controllers/Admin/AbsensiController.php',

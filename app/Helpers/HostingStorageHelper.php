@@ -46,7 +46,7 @@ class HostingStorageHelper
                 'public_html' => $userDir . '/public_html',
                 'current_storage' => $basePath . '/storage/app/public',
                 'laravel_storage' => $userDir . '/project_laravel/storage/app/public',
-                'public_storage' => $userDir . '/public_html/storage',
+                'public_storage' => $userDir . '/public_html/uploads',
             ];
         } else {
             // Fallback untuk localhost atau struktur lain
@@ -56,7 +56,7 @@ class HostingStorageHelper
                 'public_html' => base_path('../public_html'),
                 'current_storage' => $basePath . '/storage/app/public',
                 'laravel_storage' => base_path('../project_laravel/storage/app/public'),
-                'public_storage' => base_path('../public_html/storage'),
+                'public_storage' => base_path('../public_html/uploads'),
             ];
         }
     }

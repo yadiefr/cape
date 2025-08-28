@@ -26,6 +26,7 @@ return array(
     'App\\Exports\\SiswaAbsensiExport' => $baseDir . '/app/Exports/SiswaAbsensiExport.php',
     'App\\Exports\\TemplateExport' => $baseDir . '/app/Exports/TemplateExport.php',
     'App\\Exports\\TemplateSiswaExport' => $baseDir . '/app/Exports/TemplateSiswaExport.php',
+    'App\\Helpers\\HostingStorageHelper' => $baseDir . '/app/Helpers/HostingStorageHelper.php',
     'App\\Http\\Controllers\\AbsensiController' => $baseDir . '/app/Http/Controllers/AbsensiController.php',
     'App\\Http\\Controllers\\AdminController' => $baseDir . '/app/Http/Controllers/AdminController.php',
     'App\\Http\\Controllers\\Admin\\AbsensiController' => $baseDir . '/app/Http/Controllers/Admin/AbsensiController.php',
